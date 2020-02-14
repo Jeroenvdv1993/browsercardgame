@@ -1,0 +1,24 @@
+first install node and npm
+Node: https://nodejs.org/en/
+Npm: (commandline)
+npm install npm@latest -g
+
+check if installed (in commandline)
+node -v
+npm -v
+
+install typescript globally
+npm install -g typescript
+
+install browserify globally
+npm install -g browserify
+
+install minify globally
+npm install -g minify
+
+open command line in project folder
+tsc -p tsconfig.json
+browserify [INPUT].js -o [OUTPUT].js
+minify [OUTPUT].js > [OUTPUT].min.js
+
+OUTPUT: the one you want to use in html
