@@ -1,15 +1,45 @@
-import{ Card} from "./card";
-import { shuffle} from "./shuffle";
-console.log("Typescript werkt");
-let card: Card = new Card(0, "Zero", 0);
-console.log(card);
-let cards: Card[] = [
-    new Card(0, "zero", 0),
-    new Card(1, "one", 1),
-    new Card(2, "two", 2),
-    new Card(3, "three", 3),
-    new Card(4, "four", 4),
-]
-console.log(cards);
-shuffle(cards);
-console.log(cards);
+import { Player } from "./player";
+
+let player: Player = new Player();
+let resetButton = document.getElementById("reset");
+let drawButton = document.getElementById("draw");
+let handUl = document.getElementById("hand");
+let deckUl = document.getElementById("deck");
+
+function draw(amount: number = 1): void{
+    if(player.draw(amount)){
+        updateHand();
+    }
+    else if(handUl !== null){
+        let li = document.createElement('li');
+        li.setAttribute("class", "text-danger");
+        li.innerHTML = "Couldn't draw enough cards from deck.";
+        handUl.appendChild(li);
+    }
+}
+
+function updateHand(){
+    if(handUl !== null){
+        while(handUl.firstChild){
+            handUl.removeChild(handUl.firstChild);
+        }
+        for(let index: number = 0; index < player.hand.length; index++){
+            let li = document.createElement('li');
+            li.innerHTML = player.hand[index].name;
+            handUl.appendChild(li);
+        }
+    }
+}
+
+if(resetButton !== null){
+    resetButton.onclick = function () {
+        player.reset();
+        player.shuffle();
+        draw(3);
+    }
+}
+if(drawButton !== null){
+    drawButton.onclick = function () {
+        draw();
+    }
+}

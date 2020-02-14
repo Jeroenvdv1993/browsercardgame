@@ -17,7 +17,7 @@ install minify globally
 npm install -g minify
 
 open command line in project folder
-tsc -p tsconfig.json
+tsc -p ts/tsconfig.json
 browserify [INPUT].js -o [OUTPUT].js
 minify [OUTPUT].js > [OUTPUT].min.js
 
