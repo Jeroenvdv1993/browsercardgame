@@ -9,6 +9,7 @@ let deckUl = document.getElementById("deck");
 function draw(amount: number = 1): void{
     if(player.draw(amount)){
         updateHand();
+        updateDeck();
     }
     else if(handUl !== null){
         let li = document.createElement('li');
@@ -29,6 +30,19 @@ function updateHand(){
             handUl.appendChild(li);
         }
     }
+}
+function updateDeck(){
+    if(deckUl !== null){
+        while(deckUl.firstChild){
+            deckUl.removeChild(deckUl.firstChild);
+        }
+        for(let index: number = 0; index < player.deck.length; index++){
+            let li = document.createElement('li');
+            li.innerHTML = player.deck[index].name;
+            deckUl.appendChild(li);
+        }
+    }
+
 }
 
 if(resetButton !== null){

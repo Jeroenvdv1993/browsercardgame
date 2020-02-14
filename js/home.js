@@ -24,6 +24,7 @@ function draw(amount) {
     if (amount === void 0) { amount = 1; }
     if (player.draw(amount)) {
         updateHand();
+        updateDeck();
     }
     else if (handUl !== null) {
         var li = document.createElement('li');
@@ -41,6 +42,18 @@ function updateHand() {
             var li = document.createElement('li');
             li.innerHTML = player.hand[index].name;
             handUl.appendChild(li);
+        }
+    }
+}
+function updateDeck() {
+    if (deckUl !== null) {
+        while (deckUl.firstChild) {
+            deckUl.removeChild(deckUl.firstChild);
+        }
+        for (var index = 0; index < player.deck.length; index++) {
+            var li = document.createElement('li');
+            li.innerHTML = player.deck[index].name;
+            deckUl.appendChild(li);
         }
     }
 }
