@@ -90,6 +90,11 @@ var playButton = document.getElementById("play");
 var gameDiv = document.getElementById("game");
 var handUl = document.getElementById("hand");
 var deckUl = document.getElementById("deck");
+var playzoneUl = document.getElementById("playzone");
+var discardpileUl = document.getElementById("discardpile");
+var otherPlayerHeader = document.getElementById("otherPlayer");
+var otherPlayzoneUl = document.getElementById("otherPlayzone");
+var otherDiscardpileUl = document.getElementById("otherDiscardpile");
 ///////////
 // Reset //
 ///////////
@@ -113,6 +118,21 @@ reset();
 ///////////
 // Lists //
 ///////////
+function updateUnorderedList(unorderedList, array) {
+    if (unorderedList !== null) {
+        while (unorderedList.firstChild) {
+            unorderedList.removeChild(unorderedList.firstChild);
+        }
+        for (var index = 0; index < array.length; index++) {
+            var img = document.createElement('img');
+            img.classList.add("img-fluid");
+            img.src = "../img/c_" + array[index].id + ".jpg";
+            var li = document.createElement('li');
+            li.appendChild(img);
+            unorderedList.appendChild(li);
+        }
+    }
+}
 function updateHand(player) {
     if (handUl !== null) {
         while (handUl.firstChild) {
@@ -146,13 +166,23 @@ function emptyUnorderedList(unorderedList) {
         }
     }
 }
+function updateOtherLists(otherPlayer) {
+    updateUnorderedList(otherPlayzoneUl, otherPlayer.playzone);
+    updateUnorderedList(otherDiscardpileUl, otherPlayer.discardpile);
+}
 function updateLists(player) {
     updateHand(player);
     updateDeck(player);
+    updateUnorderedList(playzoneUl, player.playzone);
+    updateUnorderedList(discardpileUl, player.discardpile);
 }
 function emptyLists() {
     emptyUnorderedList(handUl);
     emptyUnorderedList(deckUl);
+    emptyUnorderedList(playzoneUl);
+    emptyUnorderedList(discardpileUl);
+    emptyUnorderedList(otherPlayzoneUl);
+    emptyUnorderedList(otherDiscardpileUl);
     field1.emptyField();
     field2.emptyField();
 }
@@ -171,7 +201,9 @@ function draw(player, amount) {
         updateLists(player);
     }
 }
-function switchPlayer() {
+function endTurn() {
+    if (gameDiv !== null)
+        gameDiv.hidden = true;
     if (playButton !== null) {
         if (currentPlayer === field1.player) {
             nextPlayer = field2.player;
@@ -199,6 +231,46 @@ function updatePoints() {
     field1.updateField();
     field2.updateField();*/
 }
+function switchPlayer() {
+    var _a;
+    currentPlayer = nextPlayer;
+    nextPlayer = null;
+    if (currentPlayer !== null)
+        draw(currentPlayer, 3);
+    if (playerHeader !== null && currentPlayer !== null) {
+        playerHeader.innerHTML = "Player " + currentPlayer.id;
+        updateLists(currentPlayer);
+    }
+    if (currentPlayer !== null) {
+        var otherPlayer = null;
+        if (currentPlayer.id === 1) {
+            otherPlayer = field2.player;
+        }
+        else {
+            otherPlayer = field1.player;
+        }
+        if (otherPlayerHeader !== null && otherPlayer !== null) {
+            otherPlayerHeader.innerHTML = "Player " + ((_a = otherPlayer) === null || _a === void 0 ? void 0 : _a.id);
+            updateOtherLists(otherPlayer);
+        }
+    }
+    if (gameDiv !== null)
+        gameDiv.hidden = false;
+    if (playButton !== null)
+        playButton.innerText = "End Turn";
+}
+function startPlayer() {
+    currentPlayer = field1.player;
+    nextPlayer = null;
+    if (playerHeader !== null && currentPlayer !== null) {
+        playerHeader.innerHTML = "Player " + currentPlayer.id;
+        updateLists(currentPlayer);
+    }
+    if (gameDiv !== null)
+        gameDiv.hidden = false;
+    if (playButton !== null)
+        playButton.innerText = "End Turn";
+}
 /////////////
 // Buttons //
 /////////////
@@ -210,34 +282,17 @@ if (resetButton !== null) {
 if (playButton !== null) {
     playButton.onclick = function () {
         if (playButton !== null) {
-            if (playButton.innerText === "Start") {
-                currentPlayer = field1.player;
-                nextPlayer = null;
-                if (playerHeader !== null && currentPlayer !== null) {
-                    playerHeader.innerHTML = "Player " + currentPlayer.id;
-                    updateLists(currentPlayer);
-                }
-                if (gameDiv !== null)
-                    gameDiv.hidden = false;
-                playButton.innerText = "End Turn";
-            }
-            else if (playButton.innerText === "Player 1" || playButton.innerText === "Player 2") {
-                currentPlayer = nextPlayer;
-                if (currentPlayer !== null)
-                    draw(currentPlayer);
-                nextPlayer = null;
-                if (playerHeader !== null && currentPlayer !== null) {
-                    playerHeader.innerHTML = "Player " + currentPlayer.id;
-                    updateLists(currentPlayer);
-                }
-                if (gameDiv !== null)
-                    gameDiv.hidden = false;
-                playButton.innerText = "End Turn";
-            }
-            else if (playButton.innerText === "End Turn") {
-                if (gameDiv !== null)
-                    gameDiv.hidden = true;
-                switchPlayer();
+            switch (playButton.innerText) {
+                case "Start":
+                    startPlayer();
+                    break;
+                case "Player 1":
+                case "Player 2":
+                    switchPlayer();
+                    break;
+                case "End Turn":
+                    endTurn();
+                    break;
             }
         }
     };

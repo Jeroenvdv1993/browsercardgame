@@ -7,6 +7,7 @@
         <script src="../js/bootstrap.min.js" defer></script> 
         <script src="../js/home.min.js" defer></script> 
         <link rel="stylesheet" type="text/css" href="../css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="../css/home.css">
     </head>
     <body>
         <div class="container">
@@ -18,30 +19,22 @@
                 <div id="play" class="col-6 m-1 btn btn-success">Start</div>
             </div>
             <div id="game" hidden>
-                <h2 id="player" class="col-6"></h2>
+                <h2 id="otherPlayer"></h2>
                 <div class="row">
-                    <div class="row col-6">
-                        <div class="col-3 m-1">
-                            <h3>Hand</h3>
-                            <ul id="hand"></ul>
-                        </div>
-                        <div class="col-3 m-1">
-                            <h3>Deck</h3>
-                            <div>
-                                <img class="img-fluid" src="../img/cb_0.jpg" alt="deck"/>
-                                <span id="deck"></span>
-                            </div>
-                        </div>
-                    </div>
+                    <ul id="otherPlayzone"></ul>
+                    <ul id="otherDiscardpile"></ul>
+                </div>
+                <h2 id="player"></h2>
+                <div class="row">
+                    <ul id="playzone"></ul>
+                    <ul id="discardpile"></ul>
                 </div>
                 <div class="row">
-                    <div class="col-3 m-1">
-                        <h3>Player 1</h3> Points: <span id="points1"></span>
-                        <ul id="playzone1"></ul>
-                    </div>
-                    <div class="col-3 m-1">
-                        <h3>Player 2</h3> Points: <span id="points2"></span>
-                        <ul id="playzone2"></ul>
+                    <ul id="hand"></ul>
+                    <div>
+                        <img src="../img/cb_0.jpg" alt="deck">
+                        <span id="deck"></span>
+                        </img>
                     </div>
                 </div>
             </div>
