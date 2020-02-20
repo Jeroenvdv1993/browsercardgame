@@ -58,18 +58,17 @@ export class Player{
         this.deck.push(new Card(4, "four", 4));
         this.deck.push(new Card(4, "four", 4));
     }
-    play(id: number): void{
-        let card = this.hand[id];
-        if(card !== null){
-            this.removeCard(this.hand, card);
-            this.playzone.push(card);
-        }
+    play(index: number): void{
+        this.moveCard(this.hand, index, this.playzone);
     }
-    discard(id: number): void{
-        let card = this.playzone[id];
-        if(card != null){
-            this.removeCard(this.playzone, card);
-            this.discardpile.push(card);
+    discard(index: number): void{
+        this.moveCard(this.playzone, index, this.discardpile);
+    }
+    moveCard(fromArray: Card[], fromIndex: number, toArray: Card[]){
+        let card = fromArray[fromIndex];
+        if(card !== null){
+            this.removeCard(fromArray, card);
+            toArray.push(card);
         }
     }
     removeCard(array: Card[], card: Card){

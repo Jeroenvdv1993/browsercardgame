@@ -85,10 +85,9 @@ var field2 = new field_1.Field(2);
 var currentPlayer;
 var nextPlayer;
 var playerHeader = document.getElementById("player");
-var gameDiv = document.getElementById("game");
 var resetButton = document.getElementById("reset");
-var drawButton = document.getElementById("draw");
 var playButton = document.getElementById("play");
+var gameDiv = document.getElementById("game");
 var handUl = document.getElementById("hand");
 var deckUl = document.getElementById("deck");
 ///////////
@@ -103,10 +102,8 @@ function reset() {
     nextPlayer = null;
     if (playerHeader !== null)
         playerHeader.innerHTML = "";
-    if (playButton !== null) {
+    if (playButton !== null)
         playButton.innerText = "Start";
-        playButton.hidden = false;
-    }
     if (gameDiv !== null)
         gameDiv.hidden = true;
     emptyLists();
@@ -162,10 +159,11 @@ function emptyLists() {
 ////////////////////////
 // Play functionality //
 ////////////////////////
-function playCard(player, id) {
-    player.play(id);
-    draw(player);
-    switchPlayer();
+function playCard(player, index) {
+    player.play(index);
+    updateLists(player);
+    field1.updateField();
+    field2.updateField();
 }
 function draw(player, amount) {
     if (amount === void 0) { amount = 1; }
@@ -186,23 +184,20 @@ function switchPlayer() {
             playButton.innerText = "Player 1";
         }
         currentPlayer = null;
-        if (gameDiv !== null)
-            gameDiv.hidden = true;
-        playButton.hidden = false;
     }
 }
 function updatePoints() {
     //Check values and drop
-    var player1Value = field1.player.playzone[field1.player.playzone.length - 1].value;
-    var player2Value = field2.player.playzone[field2.player.playzone.length - 1].value;
-    if (player1Value > player2Value) {
+    /*let player1Value = field1.player.playzone[field1.player.playzone.length - 1].value;
+    let player2Value = field2.player.playzone[field2.player.playzone.length - 1].value;
+    if(player1Value > player2Value){
         field1.player.points += 1;
     }
-    else if (player2Value > player1Value) {
+    else if(player2Value > player1Value){
         field2.player.points += 1;
     }
     field1.updateField();
-    field2.updateField();
+    field2.updateField();*/
 }
 /////////////
 // Buttons //
@@ -212,36 +207,37 @@ if (resetButton !== null) {
         reset();
     };
 }
-if (drawButton !== null) {
-    drawButton.onclick = function () {
-        if (currentPlayer !== null)
-            draw(currentPlayer);
-    };
-}
 if (playButton !== null) {
     playButton.onclick = function () {
         if (playButton !== null) {
             if (playButton.innerText === "Start") {
                 currentPlayer = field1.player;
                 nextPlayer = null;
-                if (gameDiv !== null)
-                    gameDiv.hidden = false;
                 if (playerHeader !== null && currentPlayer !== null) {
                     playerHeader.innerHTML = "Player " + currentPlayer.id;
                     updateLists(currentPlayer);
                 }
-                playButton.hidden = true;
+                if (gameDiv !== null)
+                    gameDiv.hidden = false;
+                playButton.innerText = "End Turn";
             }
             else if (playButton.innerText === "Player 1" || playButton.innerText === "Player 2") {
                 currentPlayer = nextPlayer;
+                if (currentPlayer !== null)
+                    draw(currentPlayer);
                 nextPlayer = null;
-                if (gameDiv !== null)
-                    gameDiv.hidden = false;
                 if (playerHeader !== null && currentPlayer !== null) {
                     playerHeader.innerHTML = "Player " + currentPlayer.id;
                     updateLists(currentPlayer);
                 }
-                playButton.hidden = true;
+                if (gameDiv !== null)
+                    gameDiv.hidden = false;
+                playButton.innerText = "End Turn";
+            }
+            else if (playButton.innerText === "End Turn") {
+                if (gameDiv !== null)
+                    gameDiv.hidden = true;
+                switchPlayer();
             }
         }
     };
@@ -310,18 +306,17 @@ var Player = /** @class */ (function () {
         this.deck.push(new card_1.Card(4, "four", 4));
         this.deck.push(new card_1.Card(4, "four", 4));
     };
-    Player.prototype.play = function (id) {
-        var card = this.hand[id];
-        if (card !== null) {
-            this.removeCard(this.hand, card);
-            this.playzone.push(card);
-        }
+    Player.prototype.play = function (index) {
+        this.moveCard(this.hand, index, this.playzone);
     };
-    Player.prototype.discard = function (id) {
-        var card = this.playzone[id];
-        if (card != null) {
-            this.removeCard(this.playzone, card);
-            this.discardpile.push(card);
+    Player.prototype.discard = function (index) {
+        this.moveCard(this.playzone, index, this.discardpile);
+    };
+    Player.prototype.moveCard = function (fromArray, fromIndex, toArray) {
+        var card = fromArray[fromIndex];
+        if (card !== null) {
+            this.removeCard(fromArray, card);
+            toArray.push(card);
         }
     };
     Player.prototype.removeCard = function (array, card) {

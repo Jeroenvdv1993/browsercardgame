@@ -7,11 +7,10 @@ let field2: Field = new Field(2);
 let currentPlayer: Player | null;
 let nextPlayer: Player | null;
 let playerHeader = document.getElementById("player");
-let gameDiv = document.getElementById("game");
 
 let resetButton = document.getElementById("reset");
-let drawButton = document.getElementById("draw");
 let playButton = document.getElementById("play");
+let gameDiv = document.getElementById("game");
 
 let handUl = document.getElementById("hand");
 let deckUl = document.getElementById("deck");
@@ -29,10 +28,7 @@ function reset(): void{
     currentPlayer = null;
     nextPlayer = null;
     if(playerHeader !== null) playerHeader.innerHTML = "";
-    if(playButton !== null){
-        playButton.innerText = "Start";
-        playButton.hidden = false;
-    }
+    if(playButton !== null) playButton.innerText = "Start";
     if(gameDiv !== null) gameDiv.hidden = true;
     emptyLists();
 }
@@ -86,10 +82,11 @@ function emptyLists(): void{
 ////////////////////////
 // Play functionality //
 ////////////////////////
-function playCard(player: Player, id: number): void{
-    player.play(id);
-    draw(player);
-    switchPlayer();
+function playCard(player: Player, index: number): void{
+    player.play(index);
+    updateLists(player);
+    field1.updateField();
+    field2.updateField();
 }
 
 function draw(player: Player, amount: number = 1): void{
@@ -109,14 +106,12 @@ function switchPlayer(){
             playButton.innerText = "Player 1";
         }
         currentPlayer = null;
-        if(gameDiv !== null) gameDiv.hidden = true;
-        playButton.hidden = false;
     }
 }
 
 function updatePoints(){
     //Check values and drop
-    let player1Value = field1.player.playzone[field1.player.playzone.length - 1].value;
+    /*let player1Value = field1.player.playzone[field1.player.playzone.length - 1].value;
     let player2Value = field2.player.playzone[field2.player.playzone.length - 1].value;
     if(player1Value > player2Value){
         field1.player.points += 1;
@@ -125,7 +120,7 @@ function updatePoints(){
         field2.player.points += 1;
     }
     field1.updateField();
-    field2.updateField();
+    field2.updateField();*/
 }
 /////////////
 // Buttons //
@@ -135,33 +130,33 @@ if(resetButton !== null){
         reset();
     }
 }
-if(drawButton !== null){
-    drawButton.onclick = function () {
-        if(currentPlayer !== null) draw(currentPlayer);
-    }
-}
 if(playButton !== null){
     playButton.onclick = function(){
         if(playButton !== null){
             if(playButton.innerText === "Start"){
                 currentPlayer = field1.player;
                 nextPlayer = null;
-                if(gameDiv !== null) gameDiv.hidden = false;
                 if(playerHeader !== null && currentPlayer !== null){
                     playerHeader.innerHTML = `Player ${currentPlayer.id}`;
                     updateLists(currentPlayer);
                 }
-                playButton.hidden = true;
+                if(gameDiv !== null) gameDiv.hidden = false;
+                playButton.innerText = "End Turn";
             }
             else if(playButton.innerText === "Player 1" || playButton.innerText === "Player 2"){
                 currentPlayer = nextPlayer;
+                if(currentPlayer !== null) draw(currentPlayer);
                 nextPlayer = null;
-                if(gameDiv !== null) gameDiv.hidden = false;
                 if(playerHeader !== null && currentPlayer !== null){
                     playerHeader.innerHTML = `Player ${currentPlayer.id}`;
                     updateLists(currentPlayer);
                 }
-                playButton.hidden = true;
+                if(gameDiv !== null) gameDiv.hidden = false;
+                playButton.innerText = "End Turn";
+            }
+            else if(playButton.innerText === "End Turn"){
+                if(gameDiv !== null) gameDiv.hidden = true;
+                switchPlayer();
             }
         }
     }
