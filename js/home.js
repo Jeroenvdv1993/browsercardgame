@@ -15,16 +15,23 @@ exports.Card = Card;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var player_1 = require("./player");
-var player = new player_1.Player();
+var player1 = new player_1.Player(1);
+var player2 = new player_1.Player(2);
+var currentPlayer;
+var nextPlayer;
+var playerHeader = document.getElementById("player");
 var resetButton = document.getElementById("reset");
 var drawButton = document.getElementById("draw");
+var playButton = document.getElementById("play");
 var handUl = document.getElementById("hand");
 var deckUl = document.getElementById("deck");
-function draw(amount) {
+var playzone1Ul = document.getElementById("playzone1");
+var playzone2Ul = document.getElementById("playzone2");
+reset();
+function draw(player, amount) {
     if (amount === void 0) { amount = 1; }
     if (player.draw(amount)) {
-        updateHand();
-        updateDeck();
+        updateLists(player);
     }
     else if (handUl !== null) {
         var li = document.createElement('li');
@@ -33,40 +40,127 @@ function draw(amount) {
         handUl.appendChild(li);
     }
 }
-function updateHand() {
+function emptyUnorderedList(unorderedList) {
+    if (unorderedList !== null) {
+        while (unorderedList.firstChild) {
+            unorderedList.removeChild(unorderedList.firstChild);
+        }
+    }
+}
+function updateHand(player) {
     if (handUl !== null) {
         while (handUl.firstChild) {
             handUl.removeChild(handUl.firstChild);
         }
-        for (var index = 0; index < player.hand.length; index++) {
+        var _loop_1 = function (index) {
             var li = document.createElement('li');
             li.innerHTML = player.hand[index].name;
+            li.addEventListener('click', function () {
+                playCard(player, player.hand[index].id);
+            });
             handUl.appendChild(li);
+        };
+        for (var index = 0; index < player.hand.length; index++) {
+            _loop_1(index);
         }
     }
 }
-function updateDeck() {
+function playCard(player, id) {
+    player.play(id);
+    updateLists(player);
+}
+function updateDeck(player) {
     if (deckUl !== null) {
-        while (deckUl.firstChild) {
-            deckUl.removeChild(deckUl.firstChild);
+        updateUnorderedList(deckUl, player.deck);
+    }
+}
+function updatePlayzone() {
+    if (playzone1Ul !== null) {
+        updateUnorderedList(playzone1Ul, player1.playzone);
+    }
+    if (playzone2Ul !== null) {
+        updateUnorderedList(playzone2Ul, player2.playzone);
+    }
+}
+function updateUnorderedList(unorderedList, array) {
+    if (unorderedList !== null) {
+        while (unorderedList.firstChild) {
+            unorderedList.removeChild(unorderedList.firstChild);
         }
-        for (var index = 0; index < player.deck.length; index++) {
+        for (var index = 0; index < array.length; index++) {
             var li = document.createElement('li');
-            li.innerHTML = player.deck[index].name;
-            deckUl.appendChild(li);
+            li.innerHTML = array[index].name;
+            unorderedList.appendChild(li);
         }
     }
+}
+function updateLists(player) {
+    updateHand(player);
+    updateDeck(player);
+    updatePlayzone();
+}
+function emptyLists() {
+    emptyUnorderedList(handUl);
+    emptyUnorderedList(deckUl);
+    emptyUnorderedList(playzone1Ul);
+    emptyUnorderedList(playzone2Ul);
+}
+function reset() {
+    player1.reset();
+    player1.shuffle();
+    draw(player1, 3);
+    player2.reset();
+    player2.shuffle();
+    draw(player2, 3);
+    currentPlayer = null;
+    nextPlayer = null;
+    if (playerHeader !== null) {
+        playerHeader.innerHTML = "";
+    }
+    emptyLists();
 }
 if (resetButton !== null) {
     resetButton.onclick = function () {
-        player.reset();
-        player.shuffle();
-        draw(3);
+        reset();
     };
 }
 if (drawButton !== null) {
     drawButton.onclick = function () {
-        draw();
+        if (currentPlayer !== null)
+            draw(currentPlayer);
+    };
+}
+if (playButton !== null) {
+    playButton.onclick = function () {
+        if (playButton !== null) {
+            if (playButton.innerText === "Player 1" || playButton.innerText === "Player 2") {
+                currentPlayer = nextPlayer;
+                nextPlayer = null;
+                playButton.innerText = "Switch";
+            }
+            else {
+                if (currentPlayer === player1) {
+                    currentPlayer = null;
+                    nextPlayer = player2;
+                    playButton.innerText = "Player 2";
+                }
+                else {
+                    currentPlayer = null;
+                    nextPlayer = player1;
+                    playButton.innerText = "Player 1";
+                }
+            }
+        }
+        if (playerHeader !== null && currentPlayer !== null) {
+            playerHeader.innerHTML = "Player " + currentPlayer.id;
+            updateHand(currentPlayer);
+            updateDeck(currentPlayer);
+            updatePlayzone();
+        }
+        else if (playerHeader !== null) {
+            playerHeader.innerHTML = "";
+            emptyLists();
+        }
     };
 }
 
@@ -76,9 +170,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var card_1 = require("./card");
 var shuffle_1 = require("./shuffle");
 var Player = /** @class */ (function () {
-    function Player() {
+    function Player(id) {
         this.hand = [];
         this.deck = [];
+        this.playzone = [];
+        this.discardpile = [];
+        this.id = id;
         this.reset();
     }
     Player.prototype.shuffle = function () {
@@ -100,6 +197,8 @@ var Player = /** @class */ (function () {
     Player.prototype.reset = function () {
         this.hand = [];
         this.deck = [];
+        this.playzone = [];
+        this.discardpile = [];
         this.deck.push(new card_1.Card(0, "zero", 0));
         this.deck.push(new card_1.Card(1, "one", 1));
         this.deck.push(new card_1.Card(2, "two", 2));
@@ -115,6 +214,26 @@ var Player = /** @class */ (function () {
         for (var index = 0; index < this.deck.length; index++) {
             console.log(this.deck[index]);
         }
+    };
+    Player.prototype.play = function (id) {
+        var card = this.findIdInArray(this.hand, id);
+        if (card !== null) {
+            this.removeCard(this.hand, card);
+            this.playzone.push(card);
+        }
+    };
+    Player.prototype.removeCard = function (array, card) {
+        var index = array.indexOf(card, 0);
+        if (index > -1) {
+            array.splice(index, 1);
+        }
+    };
+    Player.prototype.findIdInArray = function (array, id) {
+        for (var index = 0; index < array.length; index++) {
+            if (array[index].id === id)
+                return array[index];
+        }
+        return null;
     };
     return Player;
 }());

@@ -12,12 +12,32 @@
         <div class="container">
             <h1>HOME</h1>
             <div class="row">
-                <div id="reset" class="col-1 m-1 btn btn-primary">Reset</div> 
-                <div id="draw" class="col-1 m-1 btn btn-secondary">Draw</div>
+                <div id="reset" class="col-3 m-1 btn btn-primary">Reset</div> 
+                <div id="draw" class="col-3 m-1 btn btn-secondary">Draw</div>
+                <div id="play" class="col-3 m-1 btn btn-secondary">Switch</div>
             </div>
             <div class="row">
-                <ul id="hand" class="col-1 m-1"></ul>
-                <ul id="deck" class="col-1 m-1"></ul>
+                <h2 id="player" class="col-6"></h2>
+                <div class="col-2 m-1">
+                    <h3>Player 1</h3>
+                    <ul id="playzone1"></ul>
+                </div>
+                <div class="col-2 m-1">
+                    <h3>Player 2</h3>
+                    <ul id="playzone2"></ul>
+                </div>
+            </div>
+            <div class="row">
+                <div class="row col-6">
+                    <div class="col-2 m-1">
+                        <h3>Hand</h3>
+                        <ul id="hand"></ul>
+                    </div>
+                    <div class="col-2 m-1">
+                        <h3>Deck</h3>
+                        <ul id="deck"></ul>
+                    </div>
+                </div>
             </div>
         </div>
     </body>
