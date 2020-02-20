@@ -31,23 +31,33 @@ export class Player{
         this.playzone = [];
         this.discardpile = [];
         this.deck.push(new Card(0, "zero", 0));
+        this.deck.push(new Card(0, "zero", 0));
+        this.deck.push(new Card(0, "zero", 0));
+        this.deck.push(new Card(0, "zero", 0));
+        this.deck.push(new Card(0, "zero", 0));
+        this.deck.push(new Card(1, "one", 1));
+        this.deck.push(new Card(1, "one", 1));
+        this.deck.push(new Card(1, "one", 1));
+        this.deck.push(new Card(1, "one", 1));
         this.deck.push(new Card(1, "one", 1));
         this.deck.push(new Card(2, "two", 2));
+        this.deck.push(new Card(2, "two", 2));
+        this.deck.push(new Card(2, "two", 2));
+        this.deck.push(new Card(2, "two", 2));
+        this.deck.push(new Card(2, "two", 2));
+        this.deck.push(new Card(3, "three", 3));
+        this.deck.push(new Card(3, "three", 3));
+        this.deck.push(new Card(3, "three", 3));
+        this.deck.push(new Card(3, "three", 3));
         this.deck.push(new Card(3, "three", 3));
         this.deck.push(new Card(4, "four", 4));
-    }
-    print(): void{
-        console.log("HAND");
-        for(let index: number = 0; index < this.hand.length; index++){
-            console.log(this.hand[index]);
-        }
-        console.log("DECK");
-        for(let index: number = 0; index < this.deck.length; index++){
-            console.log(this.deck[index]);
-        }
+        this.deck.push(new Card(4, "four", 4));
+        this.deck.push(new Card(4, "four", 4));
+        this.deck.push(new Card(4, "four", 4));
+        this.deck.push(new Card(4, "four", 4));
     }
     play(id: number): void{
-        let card = this.findIdInArray(this.hand, id);
+        let card = this.hand[id];
         if(card !== null){
             this.removeCard(this.hand, card);
             this.playzone.push(card);
@@ -58,11 +68,5 @@ export class Player{
         if( index > -1){
             array.splice(index, 1);
         }
-    }
-    findIdInArray(array: Card[], id: number): Card | null{
-        for(let index: number = 0; index < array.length; index++){
-            if(array[index].id === id) return array[index];
-        }
-        return null;
     }
 };

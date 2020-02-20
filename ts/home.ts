@@ -6,6 +6,7 @@ let player2: Player = new Player(2);
 let currentPlayer: Player | null;
 let nextPlayer: Player | null;
 let playerHeader = document.getElementById("player");
+let gameDiv = document.getElementById("game");
 
 let resetButton = document.getElementById("reset");
 let drawButton = document.getElementById("draw");
@@ -29,9 +30,12 @@ function reset(): void{
     draw(player2, 3);
     currentPlayer = null;
     nextPlayer = null;
-    if(playerHeader !== null){
-        playerHeader.innerHTML = "";
+    if(playerHeader !== null) playerHeader.innerHTML = "";
+    if(playButton !== null){
+        playButton.innerText = "Start";
+        playButton.hidden = false;
     }
+    if(gameDiv !== null) gameDiv.hidden = true;
     emptyLists();
 }
 // Start a new game
@@ -46,8 +50,11 @@ function updateUnorderedList(unorderedList: HTMLElement, array: Card[]){
             unorderedList.removeChild(unorderedList.firstChild);
         }
         for(let index: number = 0; index < array.length; index++){
+            let img = document.createElement('img');
+            img.classList.add("img-fluid");
+            img.src = `../img/c_${array[index].id}.jpg`;
             let li = document.createElement('li');
-            li.innerHTML = array[index].name;
+            li.appendChild(img);
             unorderedList.appendChild(li);
         }
     }
@@ -58,10 +65,13 @@ function updateHand(player: Player){
             handUl.removeChild(handUl.firstChild);
         }
         for(let index: number = 0; index < player.hand.length; index++){
+            let img = document.createElement('img');
+            img.classList.add("img-fluid");
+            img.src = `../img/c_${player.hand[index].id}.jpg`;
             let li = document.createElement('li');
-            li.innerHTML = player.hand[index].name;
+            li.appendChild(img);
             li.addEventListener('click', function(){
-                playCard(player, player.hand[index].id);
+                playCard(player, index);
             });
             handUl.appendChild(li);
         }
@@ -69,7 +79,7 @@ function updateHand(player: Player){
 }
 function updateDeck(player: Player){
     if(deckUl !== null){
-        updateUnorderedList(deckUl, player.deck);
+        deckUl.innerText = `${player.deck.length}`;
     }
 }
 
@@ -104,18 +114,29 @@ function emptyLists(): void{
 ////////////////////////
 function playCard(player: Player, id: number): void{
     player.play(id);
+    draw(player);
     updateLists(player);
+    switchPlayer();
 }
 
 function draw(player: Player, amount: number = 1): void{
     if(player.draw(amount)){
         updateLists(player);
     }
-    else if(handUl !== null){
-        let li = document.createElement('li');
-        li.setAttribute("class", "text-danger");
-        li.innerHTML = "Couldn't draw enough cards from deck.";
-        handUl.appendChild(li);
+}
+function switchPlayer(){
+    if(playButton !== null){
+        if(currentPlayer === player1){
+            nextPlayer = player2;
+            playButton.innerText = "Player 2";
+        }
+        else{
+            nextPlayer = player1;
+            playButton.innerText = "Player 1";
+        }
+        currentPlayer = null;
+        if(gameDiv !== null) gameDiv.hidden = true;
+        playButton.hidden = false;
     }
 }
 /////////////
@@ -134,31 +155,26 @@ if(drawButton !== null){
 if(playButton !== null){
     playButton.onclick = function(){
         if(playButton !== null){
-            if(playButton.innerText === "Player 1" || playButton.innerText === "Player 2"){
+            if(playButton.innerText === "Start"){
+                currentPlayer = player1;
+                nextPlayer = null;
+                if(gameDiv !== null) gameDiv.hidden = false;
+                if(playerHeader !== null && currentPlayer !== null){
+                    playerHeader.innerHTML = `Player ${currentPlayer.id}`;
+                    updateLists(currentPlayer);
+                }
+                playButton.hidden = true;
+            }
+            else if(playButton.innerText === "Player 1" || playButton.innerText === "Player 2"){
                 currentPlayer = nextPlayer;
                 nextPlayer = null;
-                playButton.innerText = "Switch";
-            }
-            else{
-                if(currentPlayer === player1){
-                    currentPlayer = null;
-                    nextPlayer = player2;
-                    playButton.innerText = "Player 2";
+                if(gameDiv !== null) gameDiv.hidden = false;
+                if(playerHeader !== null && currentPlayer !== null){
+                    playerHeader.innerHTML = `Player ${currentPlayer.id}`;
+                    updateLists(currentPlayer);
                 }
-                else{
-                    currentPlayer = null;
-                    nextPlayer = player1;
-                    playButton.innerText = "Player 1";
-                }
+                playButton.hidden = true;
             }
-        }
-        if(playerHeader !== null && currentPlayer !== null){
-            playerHeader.innerHTML = `Player ${currentPlayer.id}`;
-            updateLists(currentPlayer);
-        }
-        else if(playerHeader !== null){
-            playerHeader.innerHTML = "";
-            emptyLists();
         }
     }
 }
