@@ -106,7 +106,6 @@ function emptyUnorderedList(unorderedList: HTMLElement | null){
 function updateLists(player: Player): void{
     updateHand(player);
     updateDeck(player);
-    updatePlayzone();
 }
 function emptyLists(): void{
     emptyUnorderedList(handUl);
@@ -135,6 +134,7 @@ function switchPlayer(){
             playButton.innerText = "Player 2";
         }
         else{
+            if(currentPlayer === player2) updatePoints();
             nextPlayer = player1;
             playButton.innerText = "Player 1";
         }
@@ -142,6 +142,21 @@ function switchPlayer(){
         if(gameDiv !== null) gameDiv.hidden = true;
         playButton.hidden = false;
     }
+}
+
+function updatePoints(){
+    //Check values and drop
+    let player1Value = player1.playzone[player1.playzone.length - 1].value;
+    let player2Value = player2.playzone[player2.playzone.length - 1].value;
+    if(player1Value > player2Value){
+        player1.points += 1;
+    }
+    else if(player2Value > player1Value){
+        player2.points += 1;
+    }
+    if(points1Span !== null) points1Span.innerText = `${player1.points}`;
+    if(points2Span !== null) points2Span.innerText = `${player2.points}`;
+    updatePlayzone();
 }
 /////////////
 // Buttons //
