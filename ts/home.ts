@@ -17,6 +17,9 @@ let deckUl = document.getElementById("deck");
 let playzone1Ul = document.getElementById("playzone1");
 let playzone2Ul = document.getElementById("playzone2");
 
+let points1Span = document.getElementById("points1");
+let points2Span = document.getElementById("points2");
+
 ///////////
 // Reset //
 ///////////
@@ -36,6 +39,8 @@ function reset(): void{
         playButton.hidden = false;
     }
     if(gameDiv !== null) gameDiv.hidden = true;
+    if(points1Span !== null) points1Span.innerText = `${player1.points}`;
+    if(points2Span !== null) points2Span.innerText = `${player2.points}`;
     emptyLists();
 }
 // Start a new game
@@ -115,7 +120,6 @@ function emptyLists(): void{
 function playCard(player: Player, id: number): void{
     player.play(id);
     draw(player);
-    updateLists(player);
     switchPlayer();
 }
 

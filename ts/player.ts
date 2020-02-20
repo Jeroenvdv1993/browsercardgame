@@ -6,6 +6,7 @@ export class Player{
     deck: Card[] = [];
     playzone: Card[] = [];
     discardpile: Card[] = [];
+    points: number = 0;
     constructor(id: number){
         this.id = id;
         this.reset();
@@ -26,6 +27,7 @@ export class Player{
         }
     }
     reset(): void{
+        this.points = 0;
         this.hand = [];
         this.deck = [];
         this.playzone = [];
@@ -61,6 +63,13 @@ export class Player{
         if(card !== null){
             this.removeCard(this.hand, card);
             this.playzone.push(card);
+        }
+    }
+    discard(id: number): void{
+        let card = this.playzone[id];
+        if(card != null){
+            this.removeCard(this.playzone, card);
+            this.discardpile.push(card);
         }
     }
     removeCard(array: Card[], card: Card){

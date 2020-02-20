@@ -28,6 +28,8 @@ var handUl = document.getElementById("hand");
 var deckUl = document.getElementById("deck");
 var playzone1Ul = document.getElementById("playzone1");
 var playzone2Ul = document.getElementById("playzone2");
+var points1Span = document.getElementById("points1");
+var points2Span = document.getElementById("points2");
 ///////////
 // Reset //
 ///////////
@@ -48,6 +50,10 @@ function reset() {
     }
     if (gameDiv !== null)
         gameDiv.hidden = true;
+    if (points1Span !== null)
+        points1Span.innerText = "" + player1.points;
+    if (points2Span !== null)
+        points2Span.innerText = "" + player2.points;
     emptyLists();
 }
 // Start a new game
@@ -128,7 +134,6 @@ function emptyLists() {
 function playCard(player, id) {
     player.play(id);
     draw(player);
-    updateLists(player);
     switchPlayer();
 }
 function draw(player, amount) {
@@ -207,6 +212,7 @@ var Player = /** @class */ (function () {
         this.deck = [];
         this.playzone = [];
         this.discardpile = [];
+        this.points = 0;
         this.id = id;
         this.reset();
     }
@@ -227,6 +233,7 @@ var Player = /** @class */ (function () {
         }
     };
     Player.prototype.reset = function () {
+        this.points = 0;
         this.hand = [];
         this.deck = [];
         this.playzone = [];
@@ -262,6 +269,13 @@ var Player = /** @class */ (function () {
         if (card !== null) {
             this.removeCard(this.hand, card);
             this.playzone.push(card);
+        }
+    };
+    Player.prototype.discard = function (id) {
+        var card = this.playzone[id];
+        if (card != null) {
+            this.removeCard(this.playzone, card);
+            this.discardpile.push(card);
         }
     };
     Player.prototype.removeCard = function (array, card) {
