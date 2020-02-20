@@ -15,8 +15,73 @@ exports.Card = Card;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var player_1 = require("./player");
-var player1 = new player_1.Player(1);
-var player2 = new player_1.Player(2);
+var Field = /** @class */ (function () {
+    /////////////////
+    // Constructor //
+    /////////////////
+    function Field(id) {
+        this.player = new player_1.Player(id);
+        this.playzone = document.getElementById("playzone" + id);
+        this.discardpile = document.getElementById("discardpile" + id);
+        this.points = document.getElementById("points" + id);
+    }
+    ;
+    ///////////
+    // Reset //
+    ///////////
+    Field.prototype.reset = function () {
+        this.player.reset();
+        this.player.shuffle();
+        this.updateField();
+    };
+    ////////////
+    // Update //
+    ////////////
+    Field.prototype.updateField = function () {
+        this.updateUnorderedList(this.playzone, this.player.playzone);
+        this.updateUnorderedList(this.discardpile, this.player.discardpile);
+        if (this.points !== null)
+            this.points.innerText = "" + this.player.points;
+    };
+    Field.prototype.updateUnorderedList = function (unorderedList, array) {
+        if (unorderedList !== null) {
+            while (unorderedList.firstChild) {
+                unorderedList.removeChild(unorderedList.firstChild);
+            }
+            for (var index = 0; index < array.length; index++) {
+                var img = document.createElement('img');
+                img.classList.add("img-fluid");
+                img.src = "../img/c_" + array[index].id + ".jpg";
+                var li = document.createElement('li');
+                li.appendChild(img);
+                unorderedList.appendChild(li);
+            }
+        }
+    };
+    ///////////
+    // Empty //
+    ///////////
+    Field.prototype.emptyField = function () {
+        this.emptyUnorderedList(this.playzone);
+        this.emptyUnorderedList(this.discardpile);
+    };
+    Field.prototype.emptyUnorderedList = function (unorderedList) {
+        if (unorderedList !== null) {
+            while (unorderedList.firstChild) {
+                unorderedList.removeChild(unorderedList.firstChild);
+            }
+        }
+    };
+    return Field;
+}());
+exports.Field = Field;
+
+},{"./player":4}],3:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var field_1 = require("./field");
+var field1 = new field_1.Field(1);
+var field2 = new field_1.Field(2);
 var currentPlayer;
 var nextPlayer;
 var playerHeader = document.getElementById("player");
@@ -26,20 +91,14 @@ var drawButton = document.getElementById("draw");
 var playButton = document.getElementById("play");
 var handUl = document.getElementById("hand");
 var deckUl = document.getElementById("deck");
-var playzone1Ul = document.getElementById("playzone1");
-var playzone2Ul = document.getElementById("playzone2");
-var points1Span = document.getElementById("points1");
-var points2Span = document.getElementById("points2");
 ///////////
 // Reset //
 ///////////
 function reset() {
-    player1.reset();
-    player1.shuffle();
-    draw(player1, 3);
-    player2.reset();
-    player2.shuffle();
-    draw(player2, 3);
+    field1.reset();
+    draw(field1.player, 3);
+    field2.reset();
+    draw(field2.player, 3);
     currentPlayer = null;
     nextPlayer = null;
     if (playerHeader !== null)
@@ -50,10 +109,6 @@ function reset() {
     }
     if (gameDiv !== null)
         gameDiv.hidden = true;
-    if (points1Span !== null)
-        points1Span.innerText = "" + player1.points;
-    if (points2Span !== null)
-        points2Span.innerText = "" + player2.points;
     emptyLists();
 }
 // Start a new game
@@ -61,21 +116,6 @@ reset();
 ///////////
 // Lists //
 ///////////
-function updateUnorderedList(unorderedList, array) {
-    if (unorderedList !== null) {
-        while (unorderedList.firstChild) {
-            unorderedList.removeChild(unorderedList.firstChild);
-        }
-        for (var index = 0; index < array.length; index++) {
-            var img = document.createElement('img');
-            img.classList.add("img-fluid");
-            img.src = "../img/c_" + array[index].id + ".jpg";
-            var li = document.createElement('li');
-            li.appendChild(img);
-            unorderedList.appendChild(li);
-        }
-    }
-}
 function updateHand(player) {
     if (handUl !== null) {
         while (handUl.firstChild) {
@@ -102,14 +142,6 @@ function updateDeck(player) {
         deckUl.innerText = "" + player.deck.length;
     }
 }
-function updatePlayzone() {
-    if (playzone1Ul !== null) {
-        updateUnorderedList(playzone1Ul, player1.playzone);
-    }
-    if (playzone2Ul !== null) {
-        updateUnorderedList(playzone2Ul, player2.playzone);
-    }
-}
 function emptyUnorderedList(unorderedList) {
     if (unorderedList !== null) {
         while (unorderedList.firstChild) {
@@ -124,8 +156,8 @@ function updateLists(player) {
 function emptyLists() {
     emptyUnorderedList(handUl);
     emptyUnorderedList(deckUl);
-    emptyUnorderedList(playzone1Ul);
-    emptyUnorderedList(playzone2Ul);
+    field1.emptyField();
+    field2.emptyField();
 }
 ////////////////////////
 // Play functionality //
@@ -143,14 +175,14 @@ function draw(player, amount) {
 }
 function switchPlayer() {
     if (playButton !== null) {
-        if (currentPlayer === player1) {
-            nextPlayer = player2;
+        if (currentPlayer === field1.player) {
+            nextPlayer = field2.player;
             playButton.innerText = "Player 2";
         }
         else {
-            if (currentPlayer === player2)
+            if (currentPlayer === field2.player)
                 updatePoints();
-            nextPlayer = player1;
+            nextPlayer = field1.player;
             playButton.innerText = "Player 1";
         }
         currentPlayer = null;
@@ -161,19 +193,16 @@ function switchPlayer() {
 }
 function updatePoints() {
     //Check values and drop
-    var player1Value = player1.playzone[player1.playzone.length - 1].value;
-    var player2Value = player2.playzone[player2.playzone.length - 1].value;
+    var player1Value = field1.player.playzone[field1.player.playzone.length - 1].value;
+    var player2Value = field2.player.playzone[field2.player.playzone.length - 1].value;
     if (player1Value > player2Value) {
-        player1.points += 1;
+        field1.player.points += 1;
     }
     else if (player2Value > player1Value) {
-        player2.points += 1;
+        field2.player.points += 1;
     }
-    if (points1Span !== null)
-        points1Span.innerText = "" + player1.points;
-    if (points2Span !== null)
-        points2Span.innerText = "" + player2.points;
-    updatePlayzone();
+    field1.updateField();
+    field2.updateField();
 }
 /////////////
 // Buttons //
@@ -193,7 +222,7 @@ if (playButton !== null) {
     playButton.onclick = function () {
         if (playButton !== null) {
             if (playButton.innerText === "Start") {
-                currentPlayer = player1;
+                currentPlayer = field1.player;
                 nextPlayer = null;
                 if (gameDiv !== null)
                     gameDiv.hidden = false;
@@ -218,7 +247,7 @@ if (playButton !== null) {
     };
 }
 
-},{"./player":3}],3:[function(require,module,exports){
+},{"./field":2}],4:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var card_1 = require("./card");
@@ -306,7 +335,7 @@ var Player = /** @class */ (function () {
 exports.Player = Player;
 ;
 
-},{"./card":1,"./shuffle":4}],4:[function(require,module,exports){
+},{"./card":1,"./shuffle":5}],5:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 function shuffle(cards) {
@@ -326,4 +355,4 @@ function shuffle(cards) {
 }
 exports.shuffle = shuffle;
 
-},{}]},{},[2]);
+},{}]},{},[3]);

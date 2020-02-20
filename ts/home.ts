@@ -1,8 +1,9 @@
 import { Player } from "./player";
 import { Card} from "./card";
+import { Field } from "./field";
 
-let player1: Player = new Player(1);
-let player2: Player = new Player(2);
+let field1: Field = new Field(1);
+let field2: Field = new Field(2);
 let currentPlayer: Player | null;
 let nextPlayer: Player | null;
 let playerHeader = document.getElementById("player");
@@ -14,23 +15,17 @@ let playButton = document.getElementById("play");
 
 let handUl = document.getElementById("hand");
 let deckUl = document.getElementById("deck");
-let playzone1Ul = document.getElementById("playzone1");
-let playzone2Ul = document.getElementById("playzone2");
-
-let points1Span = document.getElementById("points1");
-let points2Span = document.getElementById("points2");
 
 ///////////
 // Reset //
 ///////////
 function reset(): void{
-    player1.reset();
-    player1.shuffle();
-    draw(player1, 3);
+    field1.reset();
+    draw(field1.player, 3);
 
-    player2.reset();
-    player2.shuffle();
-    draw(player2, 3);
+    field2.reset();
+    draw(field2.player, 3);
+
     currentPlayer = null;
     nextPlayer = null;
     if(playerHeader !== null) playerHeader.innerHTML = "";
@@ -39,8 +34,6 @@ function reset(): void{
         playButton.hidden = false;
     }
     if(gameDiv !== null) gameDiv.hidden = true;
-    if(points1Span !== null) points1Span.innerText = `${player1.points}`;
-    if(points2Span !== null) points2Span.innerText = `${player2.points}`;
     emptyLists();
 }
 // Start a new game
@@ -49,21 +42,6 @@ reset();
 ///////////
 // Lists //
 ///////////
-function updateUnorderedList(unorderedList: HTMLElement, array: Card[]){
-    if(unorderedList !== null){
-        while(unorderedList.firstChild){
-            unorderedList.removeChild(unorderedList.firstChild);
-        }
-        for(let index: number = 0; index < array.length; index++){
-            let img = document.createElement('img');
-            img.classList.add("img-fluid");
-            img.src = `../img/c_${array[index].id}.jpg`;
-            let li = document.createElement('li');
-            li.appendChild(img);
-            unorderedList.appendChild(li);
-        }
-    }
-}
 function updateHand(player: Player){
     if(handUl !== null){
         while(handUl.firstChild){
@@ -88,14 +66,6 @@ function updateDeck(player: Player){
     }
 }
 
-function updatePlayzone(){
-    if(playzone1Ul !== null){
-        updateUnorderedList(playzone1Ul, player1.playzone);
-    }
-    if(playzone2Ul !== null){
-        updateUnorderedList(playzone2Ul, player2.playzone);
-    }
-}
 function emptyUnorderedList(unorderedList: HTMLElement | null){
     if(unorderedList !== null){
         while(unorderedList.firstChild){
@@ -110,8 +80,8 @@ function updateLists(player: Player): void{
 function emptyLists(): void{
     emptyUnorderedList(handUl);
     emptyUnorderedList(deckUl);
-    emptyUnorderedList(playzone1Ul);
-    emptyUnorderedList(playzone2Ul);
+    field1.emptyField();
+    field2.emptyField();
 }
 ////////////////////////
 // Play functionality //
@@ -129,13 +99,13 @@ function draw(player: Player, amount: number = 1): void{
 }
 function switchPlayer(){
     if(playButton !== null){
-        if(currentPlayer === player1){
-            nextPlayer = player2;
+        if(currentPlayer === field1.player){
+            nextPlayer = field2.player;
             playButton.innerText = "Player 2";
         }
         else{
-            if(currentPlayer === player2) updatePoints();
-            nextPlayer = player1;
+            if(currentPlayer === field2.player) updatePoints();
+            nextPlayer = field1.player;
             playButton.innerText = "Player 1";
         }
         currentPlayer = null;
@@ -146,17 +116,16 @@ function switchPlayer(){
 
 function updatePoints(){
     //Check values and drop
-    let player1Value = player1.playzone[player1.playzone.length - 1].value;
-    let player2Value = player2.playzone[player2.playzone.length - 1].value;
+    let player1Value = field1.player.playzone[field1.player.playzone.length - 1].value;
+    let player2Value = field2.player.playzone[field2.player.playzone.length - 1].value;
     if(player1Value > player2Value){
-        player1.points += 1;
+        field1.player.points += 1;
     }
     else if(player2Value > player1Value){
-        player2.points += 1;
+        field2.player.points += 1;
     }
-    if(points1Span !== null) points1Span.innerText = `${player1.points}`;
-    if(points2Span !== null) points2Span.innerText = `${player2.points}`;
-    updatePlayzone();
+    field1.updateField();
+    field2.updateField();
 }
 /////////////
 // Buttons //
@@ -175,7 +144,7 @@ if(playButton !== null){
     playButton.onclick = function(){
         if(playButton !== null){
             if(playButton.innerText === "Start"){
-                currentPlayer = player1;
+                currentPlayer = field1.player;
                 nextPlayer = null;
                 if(gameDiv !== null) gameDiv.hidden = false;
                 if(playerHeader !== null && currentPlayer !== null){
