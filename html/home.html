@@ -5,7 +5,7 @@
         <title>Home</title>
         <script src="../js/jquery-3.4.1.min.js" defer></script> 
         <script src="../js/bootstrap.min.js" defer></script> 
-        <script src="../js/home.min.js" defer></script> 
+        <script src="../js/home.js" defer></script> 
         <link rel="stylesheet" type="text/css" href="../css/bootstrap.min.css">
         <link rel="stylesheet" type="text/css" href="../css/home.css">
     </head>
@@ -21,20 +21,35 @@
             <div id="game" hidden>
                 <h2 id="otherPlayer"></h2>
                 <div class="row">
+                    <div class="offsetDiv">
+                        <img src="../img/cb_0.jpg" alt="otherDeck"/>
+                        <span id="otherDeck"></span>
+                    </div>
+                    <ul id="otherHand"></ul>
+                </div>
+                <div class="row">
+                    <div class="offsetDiv">
+                        <img src="../img/cb_0.jpg" alt="otherDiscardpile"/>
+                        <spand id="otherDiscardpile"></spand>
+                    </div>
                     <ul id="otherPlayzone"></ul>
-                    <ul id="otherDiscardpile"></ul>
+                    <div class="offsetDiv"></div>
                 </div>
                 <h2 id="player"></h2>
                 <div class="row">
+                    <div class="offsetDiv"></div>
                     <ul id="playzone"></ul>
-                    <ul id="discardpile"></ul>
+                    <div class="offsetDiv">
+                        <img src="../img/cb_0.jpg" alt="discardpile"/>
+                        <spand id="discardpile"></spand>
+                    </div>
                 </div>
                 <div class="row">
+                    <div class="offsetDiv"></div>
                     <ul id="hand"></ul>
-                    <div>
-                        <img src="../img/cb_0.jpg" alt="deck">
+                    <div class="offsetDiv">
+                        <img src="../img/cb_0.jpg" alt="deck"/>
                         <span id="deck"></span>
-                        </img>
                     </div>
                 </div>
             </div>

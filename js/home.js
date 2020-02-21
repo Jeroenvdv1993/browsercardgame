@@ -80,21 +80,25 @@ exports.Field = Field;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var field_1 = require("./field");
+var selectedCard_1 = require("./selectedCard");
 var field1 = new field_1.Field(1);
 var field2 = new field_1.Field(2);
 var currentPlayer;
 var nextPlayer;
-var playerHeader = document.getElementById("player");
 var resetButton = document.getElementById("reset");
 var playButton = document.getElementById("play");
 var gameDiv = document.getElementById("game");
+var playerHeader = document.getElementById("player");
 var handUl = document.getElementById("hand");
-var deckUl = document.getElementById("deck");
+var deckSpan = document.getElementById("deck");
 var playzoneUl = document.getElementById("playzone");
-var discardpileUl = document.getElementById("discardpile");
+var discardpileSpan = document.getElementById("discardpile");
 var otherPlayerHeader = document.getElementById("otherPlayer");
+var otherHandUl = document.getElementById("otherHand");
+var otherDeckSpan = document.getElementById("otherDeck");
 var otherPlayzoneUl = document.getElementById("otherPlayzone");
-var otherDiscardpileUl = document.getElementById("otherDiscardpile");
+var otherDiscardpileSpan = document.getElementById("otherDiscardpile");
+var selectedCard = new selectedCard_1.SelectedCard();
 ///////////
 // Reset //
 ///////////
@@ -138,25 +142,52 @@ function updateHand(player) {
         while (handUl.firstChild) {
             handUl.removeChild(handUl.firstChild);
         }
-        var _loop_1 = function (index) {
+        for (var index = 0; index < player.hand.length; index++) {
             var img = document.createElement('img');
             img.classList.add("img-fluid");
             img.src = "../img/c_" + player.hand[index].id + ".jpg";
             var li = document.createElement('li');
             li.appendChild(img);
-            li.addEventListener('click', function () {
+            /*li.addEventListener('click', function(){
                 playCard(player, index);
-            });
+            });*/
             handUl.appendChild(li);
-        };
-        for (var index = 0; index < player.hand.length; index++) {
-            _loop_1(index);
+        }
+    }
+}
+function updateOtherHand(otherPlayer) {
+    if (otherHandUl !== null) {
+        while (otherHandUl.firstChild) {
+            otherHandUl.removeChild(otherHandUl.firstChild);
+        }
+        for (var index = 0; index < otherPlayer.hand.length; index++) {
+            var img = document.createElement("img");
+            img.classList.add("img-fluid");
+            img.src = "../img/cb_0.jpg";
+            var li = document.createElement('li');
+            li.appendChild(img);
+            otherHandUl.appendChild(li);
         }
     }
 }
 function updateDeck(player) {
-    if (deckUl !== null) {
-        deckUl.innerText = "" + player.deck.length;
+    if (deckSpan !== null) {
+        deckSpan.innerText = "" + player.deck.length;
+    }
+}
+function updateOtherDeck(otherPlayer) {
+    if (otherDeckSpan !== null) {
+        otherDeckSpan.innerText = "" + otherPlayer.deck.length;
+    }
+}
+function updateDiscardpile(player) {
+    if (discardpileSpan !== null) {
+        discardpileSpan.innerText = "" + player.discardpile.length;
+    }
+}
+function updateOtherDiscardpile(otherPlayer) {
+    if (otherDiscardpileSpan !== null) {
+        otherDiscardpileSpan.innerText = "" + otherPlayer.discardpile.length;
     }
 }
 function emptyUnorderedList(unorderedList) {
@@ -167,22 +198,22 @@ function emptyUnorderedList(unorderedList) {
     }
 }
 function updateOtherLists(otherPlayer) {
+    updateOtherHand(otherPlayer);
+    updateOtherDeck(otherPlayer);
     updateUnorderedList(otherPlayzoneUl, otherPlayer.playzone);
-    updateUnorderedList(otherDiscardpileUl, otherPlayer.discardpile);
+    updateOtherDiscardpile(otherPlayer);
 }
 function updateLists(player) {
     updateHand(player);
     updateDeck(player);
     updateUnorderedList(playzoneUl, player.playzone);
-    updateUnorderedList(discardpileUl, player.discardpile);
+    updateDiscardpile(player);
 }
 function emptyLists() {
     emptyUnorderedList(handUl);
-    emptyUnorderedList(deckUl);
     emptyUnorderedList(playzoneUl);
-    emptyUnorderedList(discardpileUl);
+    emptyUnorderedList(otherHandUl);
     emptyUnorderedList(otherPlayzoneUl);
-    emptyUnorderedList(otherDiscardpileUl);
     field1.emptyField();
     field2.emptyField();
 }
@@ -192,8 +223,8 @@ function emptyLists() {
 function playCard(player, index) {
     player.play(index);
     updateLists(player);
-    field1.updateField();
-    field2.updateField();
+    //field1.updateField();
+    //field2.updateField();
 }
 function draw(player, amount) {
     if (amount === void 0) { amount = 1; }
@@ -210,26 +241,11 @@ function endTurn() {
             playButton.innerText = "Player 2";
         }
         else {
-            if (currentPlayer === field2.player)
-                updatePoints();
             nextPlayer = field1.player;
             playButton.innerText = "Player 1";
         }
         currentPlayer = null;
     }
-}
-function updatePoints() {
-    //Check values and drop
-    /*let player1Value = field1.player.playzone[field1.player.playzone.length - 1].value;
-    let player2Value = field2.player.playzone[field2.player.playzone.length - 1].value;
-    if(player1Value > player2Value){
-        field1.player.points += 1;
-    }
-    else if(player2Value > player1Value){
-        field2.player.points += 1;
-    }
-    field1.updateField();
-    field2.updateField();*/
 }
 function switchPlayer() {
     var _a;
@@ -262,9 +278,14 @@ function switchPlayer() {
 function startPlayer() {
     currentPlayer = field1.player;
     nextPlayer = null;
-    if (playerHeader !== null && currentPlayer !== null) {
-        playerHeader.innerHTML = "Player " + currentPlayer.id;
+    if (currentPlayer !== null) {
+        if (playerHeader !== null)
+            playerHeader.innerHTML = "Player " + currentPlayer.id;
         updateLists(currentPlayer);
+        var otherPlayer = field2.player;
+        if (otherPlayerHeader !== null)
+            otherPlayerHeader.innerHTML = "Player " + otherPlayer.id;
+        updateOtherLists(otherPlayer);
     }
     if (gameDiv !== null)
         gameDiv.hidden = false;
@@ -297,8 +318,98 @@ if (playButton !== null) {
         }
     };
 }
+//////////////////
+// Mouse Action //
+//////////////////
+document.onmousedown = click;
+function click(event) {
+    if (event.button == 0) {
+        var target = event.target;
+        var nodeName = target.nodeName;
+        if (nodeName !== null) {
+            switch (nodeName) {
+                case "IMG":
+                    selectCard(target);
+                    break;
+                case "UL":
+                    moveCardToZone(target);
+                    break;
+                default:
+                    deselectCard();
+                    break;
+            }
+        }
+    }
+}
+function moveCardToZone(ulNode) {
+    if (ulNode === playzoneUl) {
+        if (currentPlayer !== null && selectedCard.ulIndex !== null) {
+            playCard(currentPlayer, selectedCard.ulIndex);
+            selectedCard.empty();
+        }
+    }
+}
+function selectCard(imgNode) {
+    var origSrc = imgNode.src;
+    var dashPos = origSrc.lastIndexOf("/");
+    if (dashPos >= 0 && dashPos < origSrc.length) {
+        var path = origSrc.substr(0, dashPos + 1);
+        var filename = origSrc.substr(dashPos + 1);
+        if (filename.slice(0, 2) == "c_") {
+            // Deselect old card
+            if (selectedCard.image !== null) {
+                switchImageSelection(selectedCard.image);
+            }
+            // Select new card
+            switchImageSelection(imgNode);
+            selectedCard.image = imgNode;
+            selectedCard.ulID = getSelectedUlID();
+            selectedCard.ulIndex = getSelectedHandIndex();
+        }
+    }
+}
+function deselectCard() {
+    if (selectedCard.image !== null) {
+        switchImageSelection(selectedCard.image);
+        selectedCard.empty();
+    }
+}
+function switchImageSelection(imgNode) {
+    var origSrc = imgNode.src;
+    var dashPos = origSrc.lastIndexOf("/");
+    if (dashPos >= 0 && dashPos < origSrc.length) {
+        var path = origSrc.substr(0, dashPos + 1);
+        var filename = origSrc.substr(dashPos + 1);
+        if (filename.slice(0, 3) == "cs_") {
+            filename = filename.slice(0, 1) + filename.substr(2);
+        }
+        else if (filename.slice(0, 2) == "c_") {
+            filename = filename.slice(0, 1) + 's' + filename.substr(1);
+        }
+        imgNode.src = path + filename;
+    }
+}
+function getSelectedUlID() {
+    var ul = selectedCard.image.parentNode.parentNode;
+    if (ul !== null) {
+        if (ul.nodeName == "UL")
+            return ul.id;
+    }
+    return null;
+}
+function getSelectedHandIndex() {
+    if (selectedCard.ulID === "hand") {
+        var ulItems = selectedCard.image.parentNode.parentNode.getElementsByTagName("li");
+        for (var index = 0; index < ulItems.length; index++) {
+            if (ulItems[index].getElementsByTagName("img")[0] === selectedCard.image) {
+                return index;
+            }
+        }
+    }
+    return null;
+}
 
-},{"./field":2}],4:[function(require,module,exports){
+},{"./field":2,"./selectedCard":5}],4:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var card_1 = require("./card");
@@ -385,7 +496,25 @@ var Player = /** @class */ (function () {
 exports.Player = Player;
 ;
 
-},{"./card":1,"./shuffle":5}],5:[function(require,module,exports){
+},{"./card":1,"./shuffle":6}],5:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var SelectedCard = /** @class */ (function () {
+    function SelectedCard() {
+        this.image = null;
+        this.ulID = null;
+        this.ulIndex = null;
+    }
+    SelectedCard.prototype.empty = function () {
+        this.image = null;
+        this.ulID = null;
+        this.ulIndex = null;
+    };
+    return SelectedCard;
+}());
+exports.SelectedCard = SelectedCard;
+
+},{}],6:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 function shuffle(cards) {

@@ -12,6 +12,7 @@ img{
 li{
     display: inline;
 }
-span{
-    color: white;
+.offsetDiv{
+    width: 128px;
+    height: 128px;
 }
