@@ -39,6 +39,7 @@ let otherPlayerField: Field = new Field(
 let selectedUL: HTMLElement | null = null;
 let selectedImg: HTMLElement | null = null;
 let selectedIndex: number |null = null;
+let energy: number = 0;
 
 ///////////
 // Reset //
@@ -58,6 +59,10 @@ function reset(): void{
     if(playButton !== null) playButton.innerText = "Start";
     if(gameDiv !== null) gameDiv.hidden = true;
     emptyLists();
+    selectedUL = null;
+    selectedImg = null;
+    selectedIndex = null;
+    energy = 0;
 }
 // Start a new game
 reset();
@@ -79,7 +84,7 @@ function updateUnorderedList(UL: HTMLElement | null, array: Card[]): void{
             UL.appendChild(li);
         }
         UL.onclick = function(){
-            moveCard(array);
+            moveCard(UL, array);
         }
     }
 }
@@ -289,7 +294,7 @@ function switchImageSelection(imgNode: any){
     }
 }
 
-function moveCard(array: Card[]){
+function moveCard(UL: HTMLElement | null, array: Card[]){
     if(selectedUL !== null && selectedImg !== null && selectedIndex !== null){
         if(currentPlayer !== null){
             currentPlayer.moveCard(currentPlayer.hand, selectedIndex, array);

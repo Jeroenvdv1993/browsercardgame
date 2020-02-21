@@ -97,6 +97,7 @@ var otherPlayerField = new field_1.Field("otherPlayer", "otherHand", "otherDeck"
 var selectedUL = null;
 var selectedImg = null;
 var selectedIndex = null;
+var energy = 0;
 ///////////
 // Reset //
 ///////////
@@ -115,6 +116,10 @@ function reset() {
     if (gameDiv !== null)
         gameDiv.hidden = true;
     emptyLists();
+    selectedUL = null;
+    selectedImg = null;
+    selectedIndex = null;
+    energy = 0;
 }
 // Start a new game
 reset();
@@ -135,7 +140,7 @@ function updateUnorderedList(UL, array) {
             UL.appendChild(li);
         }
         UL.onclick = function () {
-            moveCard(array);
+            moveCard(UL, array);
         };
     }
 }
@@ -348,7 +353,7 @@ function switchImageSelection(imgNode) {
         imgNode.src = path + filename;
     }
 }
-function moveCard(array) {
+function moveCard(UL, array) {
     if (selectedUL !== null && selectedImg !== null && selectedIndex !== null) {
         if (currentPlayer !== null) {
             currentPlayer.moveCard(currentPlayer.hand, selectedIndex, array);
