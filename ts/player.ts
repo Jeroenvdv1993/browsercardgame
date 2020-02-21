@@ -5,6 +5,7 @@ export class Player{
     hand: Card[] = [];
     deck: Card[] = [];
     playzone: Card[] = [];
+    energyzone: Card[] = [];
     discardpile: Card[] = [];
     points: number = 0;
     constructor(id: number){
@@ -31,6 +32,7 @@ export class Player{
         this.hand = [];
         this.deck = [];
         this.playzone = [];
+        this.energyzone = [];
         this.discardpile = [];
         this.deck.push(new Card(0, "zero", 0));
         this.deck.push(new Card(0, "zero", 0));
@@ -63,6 +65,9 @@ export class Player{
     }
     discard(index: number): void{
         this.moveCard(this.playzone, index, this.discardpile);
+    }
+    energy(index: number): void{
+        this.moveCard(this.hand, index, this.energyzone);
     }
     moveCard(fromArray: Card[], fromIndex: number, toArray: Card[]){
         let card = fromArray[fromIndex];

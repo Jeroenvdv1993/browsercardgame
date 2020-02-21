@@ -18,11 +18,12 @@ var Field = /** @class */ (function () {
     /////////////////
     // Constructor //
     /////////////////
-    function Field(playerHeader, handUL, deckSpan, playzoneUL, discardpileSpan) {
+    function Field(playerHeader, handUL, deckSpan, playzoneUL, energyzoneUL, discardpileSpan) {
         this.playerHeader = document.getElementById(playerHeader);
         this.handUL = document.getElementById(handUL);
         this.deckSpan = document.getElementById(deckSpan);
         this.playzoneUL = document.getElementById(playzoneUL);
+        this.energyzoneUL = document.getElementById(energyzoneUL);
         this.discardpileSpan = document.getElementById(discardpileSpan);
     }
     ;
@@ -46,6 +47,9 @@ var Field = /** @class */ (function () {
     };
     Field.prototype.clearPlayzoneUL = function () {
         this.clearUL(this.playzoneUL);
+    };
+    Field.prototype.clearEnergyzoneUL = function () {
+        this.clearUL(this.energyzoneUL);
     };
     Field.prototype.clearUL = function (UL) {
         if (UL !== null) {
@@ -71,8 +75,8 @@ var nextPlayer;
 var resetButton = document.getElementById("reset");
 var playButton = document.getElementById("play");
 var gameDiv = document.getElementById("game");
-var playerField = new field_1.Field("player", "hand", "deck", "playzone", "discardpile");
-var otherPlayerField = new field_1.Field("otherPlayer", "otherHand", "otherDeck", "otherPlayzone", "otherDiscardpile");
+var playerField = new field_1.Field("player", "hand", "deck", "playzone", "energyzone", "discardpile");
+var otherPlayerField = new field_1.Field("otherPlayer", "otherHand", "otherDeck", "otherPlayzone", "otherEnergyzone", "otherDiscardpile");
 var selectedCard = new selectedCard_1.SelectedCard();
 ///////////
 // Reset //
@@ -143,25 +147,33 @@ function updateOtherLists(otherPlayer) {
     updateOtherHand(otherPlayer);
     otherPlayerField.setDeckSpan("" + otherPlayer.deck.length);
     updateUnorderedList(otherPlayerField.playzoneUL, otherPlayer.playzone);
+    updateUnorderedList(otherPlayerField.energyzoneUL, otherPlayer.energyzone);
     otherPlayerField.setDiscardpileSpan("" + otherPlayer.discardpile.length);
 }
 function updateLists(player) {
     updateHand(player);
     playerField.setDeckSpan("" + player.deck.length);
     updateUnorderedList(playerField.playzoneUL, player.playzone);
+    updateUnorderedList(playerField.energyzoneUL, player.energyzone);
     playerField.setDiscardpileSpan("" + player.discardpile.length);
 }
 function emptyLists() {
     playerField.clearHandUL();
     playerField.clearPlayzoneUL();
+    playerField.clearEnergyzoneUL();
     otherPlayerField.clearHandUL();
     otherPlayerField.clearPlayzoneUL();
+    otherPlayerField.clearEnergyzoneUL();
 }
 ////////////////////////
 // Play functionality //
 ////////////////////////
 function playCard(player, index) {
     player.play(index);
+    updateLists(player);
+}
+function energyCard(player, index) {
+    player.energy(index);
     updateLists(player);
 }
 function draw(player, amount) {
@@ -282,6 +294,12 @@ function moveCardToZone(ulNode) {
             selectedCard.empty();
         }
     }
+    else if (ulNode === playerField.energyzoneUL) {
+        if (currentPlayer !== null && selectedCard.ulIndex !== null) {
+            energyCard(currentPlayer, selectedCard.ulIndex);
+            selectedCard.empty();
+        }
+    }
 }
 function selectCard(imgNode) {
     var origSrc = imgNode.src;
@@ -353,6 +371,7 @@ var Player = /** @class */ (function () {
         this.hand = [];
         this.deck = [];
         this.playzone = [];
+        this.energyzone = [];
         this.discardpile = [];
         this.points = 0;
         this.id = id;
@@ -379,6 +398,7 @@ var Player = /** @class */ (function () {
         this.hand = [];
         this.deck = [];
         this.playzone = [];
+        this.energyzone = [];
         this.discardpile = [];
         this.deck.push(new card_1.Card(0, "zero", 0));
         this.deck.push(new card_1.Card(0, "zero", 0));
@@ -411,6 +431,9 @@ var Player = /** @class */ (function () {
     };
     Player.prototype.discard = function (index) {
         this.moveCard(this.playzone, index, this.discardpile);
+    };
+    Player.prototype.energy = function (index) {
+        this.moveCard(this.hand, index, this.energyzone);
     };
     Player.prototype.moveCard = function (fromArray, fromIndex, toArray) {
         var card = fromArray[fromIndex];

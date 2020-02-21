@@ -6,6 +6,7 @@ export class Field{
     handUL: HTMLElement | null;
     deckSpan: HTMLElement | null;
     playzoneUL: HTMLElement | null;
+    energyzoneUL: HTMLElement | null;
     discardpileSpan: HTMLElement | null;
 
 
@@ -17,11 +18,13 @@ export class Field{
         handUL: string, 
         deckSpan: string,
         playzoneUL: string,
+        energyzoneUL: string,
         discardpileSpan: string){
             this.playerHeader = document.getElementById(playerHeader);
             this.handUL = document.getElementById(handUL);
             this.deckSpan = document.getElementById(deckSpan);
             this.playzoneUL = document.getElementById(playzoneUL);
+            this.energyzoneUL = document.getElementById(energyzoneUL);
             this.discardpileSpan = document.getElementById(discardpileSpan);
     };
 
@@ -48,6 +51,9 @@ export class Field{
     }
     clearPlayzoneUL(){
         this.clearUL(this.playzoneUL);
+    }
+    clearEnergyzoneUL(){
+        this.clearUL(this.energyzoneUL);
     }
 
     clearUL(UL: HTMLElement | null){

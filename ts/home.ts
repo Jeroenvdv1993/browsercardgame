@@ -17,6 +17,7 @@ let playerField: Field = new Field(
     "hand",
     "deck",
     "playzone",
+    "energyzone",
     "discardpile"
 );
 
@@ -25,6 +26,7 @@ let otherPlayerField: Field = new Field(
     "otherHand",
     "otherDeck",
     "otherPlayzone",
+    "otherEnergyzone",
     "otherDiscardpile"
 );
 
@@ -102,19 +104,23 @@ function updateOtherLists(otherPlayer: Player): void {
     updateOtherHand(otherPlayer);
     otherPlayerField.setDeckSpan(`${otherPlayer.deck.length}`);
     updateUnorderedList(otherPlayerField.playzoneUL, otherPlayer.playzone);
+    updateUnorderedList(otherPlayerField.energyzoneUL, otherPlayer.energyzone);
     otherPlayerField.setDiscardpileSpan(`${otherPlayer.discardpile.length}`)
 }
 function updateLists(player: Player): void{
     updateHand(player);
     playerField.setDeckSpan(`${player.deck.length}`);
     updateUnorderedList(playerField.playzoneUL, player.playzone);
+    updateUnorderedList(playerField.energyzoneUL, player.energyzone);
     playerField.setDiscardpileSpan(`${player.discardpile.length}`);
 }
 function emptyLists(): void{
     playerField.clearHandUL();
     playerField.clearPlayzoneUL();
+    playerField.clearEnergyzoneUL();
     otherPlayerField.clearHandUL();
     otherPlayerField.clearPlayzoneUL();
+    otherPlayerField.clearEnergyzoneUL();
 }
 ////////////////////////
 // Play functionality //
@@ -124,6 +130,10 @@ function playCard(player: Player, index: number): void{
     updateLists(player);
 }
 
+function energyCard(player: Player, index: number): void{
+    player.energy(index);
+    updateLists(player);
+}
 function draw(player: Player, amount: number = 1): void{
     if(player.draw(amount)){
         updateLists(player);
@@ -235,6 +245,12 @@ function moveCardToZone(ulNode: any){
     if(ulNode  === playerField.playzoneUL){
         if(currentPlayer !== null && selectedCard.ulIndex !== null){
             playCard(currentPlayer, selectedCard.ulIndex);
+            selectedCard.empty();
+        }
+    }
+    else if(ulNode === playerField.energyzoneUL){
+        if(currentPlayer !== null && selectedCard.ulIndex !== null){
+            energyCard(currentPlayer, selectedCard.ulIndex);
             selectedCard.empty();
         }
     }
