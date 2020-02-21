@@ -18,7 +18,10 @@ let playerField: Field = new Field(
     "deck",
     "playzone",
     "energyzone",
-    "discardpile"
+    "discardpile",
+    "handLength",
+    "playLength",
+    "energyLength"
 );
 
 let otherPlayerField: Field = new Field(
@@ -27,10 +30,15 @@ let otherPlayerField: Field = new Field(
     "otherDeck",
     "otherPlayzone",
     "otherEnergyzone",
-    "otherDiscardpile"
+    "otherDiscardpile",
+    "otherHandLength",
+    "otherPlayLength",
+    "otherEnergyLength"
 );
 
-let selectedCard: SelectedCard = new SelectedCard();
+let selectedUL: HTMLElement | null = null;
+let selectedImg: HTMLElement | null = null;
+let selectedIndex: number |null = null;
 
 ///////////
 // Reset //
@@ -57,10 +65,10 @@ reset();
 ///////////
 // Lists //
 ///////////
-function updateUnorderedList(unorderedList: HTMLElement | null, array: Card[]): void{
-    if(unorderedList !== null){
-        while(unorderedList.firstChild){
-            unorderedList.removeChild(unorderedList.firstChild);
+function updateUnorderedList(UL: HTMLElement | null, array: Card[]): void{
+    if(UL !== null){
+        while(UL.firstChild){
+            UL.removeChild(UL.firstChild);
         }
         for(let index: number = 0; index < array.length; index++){
             let img = document.createElement('img');
@@ -68,7 +76,25 @@ function updateUnorderedList(unorderedList: HTMLElement | null, array: Card[]): 
             img.src = `../img/c_${array[index].id}.jpg`;
             let li = document.createElement('li');
             li.appendChild(img);
-            unorderedList.appendChild(li);
+            UL.appendChild(li);
+        }
+        UL.onclick = function(){
+            moveCard(array);
+        }
+    }
+}
+function updateOtherUnorderedList(UL: HTMLElement | null, array: Card[]): void{
+    if(UL !== null){
+        while(UL.firstChild){
+            UL.removeChild(UL.firstChild);
+        }
+        for(let index: number = 0; index < array.length; index++){
+            let img = document.createElement('img');
+            img.classList.add("img-fluid");
+            img.src = `../img/c_${array[index].id}.jpg`;
+            let li = document.createElement('li');
+            li.appendChild(img);
+            UL.appendChild(li);
         }
     }
 }
@@ -82,6 +108,9 @@ function updateHand(player: Player){
             img.src = `../img/c_${player.hand[index].id}.jpg`;
             let li = document.createElement('li');
             li.appendChild(img);
+            li.onclick = function(){
+                selectCard(playerField.handUL, index);
+            };
             playerField.handUL.appendChild(li);
         }
     }
@@ -103,9 +132,12 @@ function updateOtherHand(otherPlayer: Player){
 function updateOtherLists(otherPlayer: Player): void {
     updateOtherHand(otherPlayer);
     otherPlayerField.setDeckSpan(`${otherPlayer.deck.length}`);
-    updateUnorderedList(otherPlayerField.playzoneUL, otherPlayer.playzone);
-    updateUnorderedList(otherPlayerField.energyzoneUL, otherPlayer.energyzone);
+    updateOtherUnorderedList(otherPlayerField.playzoneUL, otherPlayer.playzone);
+    updateOtherUnorderedList(otherPlayerField.energyzoneUL, otherPlayer.energyzone);
     otherPlayerField.setDiscardpileSpan(`${otherPlayer.discardpile.length}`)
+    otherPlayerField.setHandLengthSpan(`${otherPlayer.hand.length}`);
+    otherPlayerField.setPlayLengthSpan(`${otherPlayer.playzone.length}`);
+    otherPlayerField.setEnergyLengthSpan(`${otherPlayer.energyzone.length}`);
 }
 function updateLists(player: Player): void{
     updateHand(player);
@@ -113,6 +145,9 @@ function updateLists(player: Player): void{
     updateUnorderedList(playerField.playzoneUL, player.playzone);
     updateUnorderedList(playerField.energyzoneUL, player.energyzone);
     playerField.setDiscardpileSpan(`${player.discardpile.length}`);
+    playerField.setHandLengthSpan(`${player.hand.length}`);
+    playerField.setPlayLengthSpan(`${player.playzone.length}`);
+    playerField.setEnergyLengthSpan(`${player.energyzone.length}`);
 }
 function emptyLists(): void{
     playerField.clearHandUL();
@@ -220,65 +255,21 @@ if(playButton !== null){
 //////////////////
 // Mouse Action //
 //////////////////
-document.onmousedown = click;
-function click(event: any){
-    if(event.button == 0){
-        let target: any = event.target;
-        let nodeName: string | null = target.nodeName;
-        if(nodeName !== null){
-            switch(nodeName){
-                case "IMG":
-                    selectCard(target);
-                    break;
-                case "UL":
-                    moveCardToZone(target);
-                    break;
-                default:
-                    deselectCard();
-                    break;
+function selectCard(ul: HTMLElement | null, index: number){
+    if(ul !== null){
+        let li: HTMLElement | null = ul.getElementsByTagName("li")[index];
+        if(li !== null){
+            let img: HTMLElement | null = li.getElementsByTagName("img")[0];
+            if(img !== null){
+                if(selectedImg !== null){
+                    switchImageSelection(selectedImg);
+                }
+                switchImageSelection(img);
+                selectedUL = ul;
+                selectedImg = img;
+                selectedIndex = index;
             }
         }
-    }
-}
-
-function moveCardToZone(ulNode: any){
-    if(ulNode  === playerField.playzoneUL){
-        if(currentPlayer !== null && selectedCard.ulIndex !== null){
-            playCard(currentPlayer, selectedCard.ulIndex);
-            selectedCard.empty();
-        }
-    }
-    else if(ulNode === playerField.energyzoneUL){
-        if(currentPlayer !== null && selectedCard.ulIndex !== null){
-            energyCard(currentPlayer, selectedCard.ulIndex);
-            selectedCard.empty();
-        }
-    }
-}
-function selectCard(imgNode: any){
-    let origSrc: string = imgNode.src;
-    let dashPos: number = origSrc.lastIndexOf("/");
-    if(dashPos >=0 && dashPos < origSrc.length){
-        let path: string = origSrc.substr(0, dashPos + 1);
-        let filename: string = origSrc.substr(dashPos + 1);
-        if(filename.slice(0,2) == "c_"){
-            // Deselect old card
-            if(selectedCard.image !== null){
-                switchImageSelection(selectedCard.image);
-            }
-            // Select new card
-            switchImageSelection(imgNode);
-            selectedCard.image = imgNode;
-            selectedCard.ulID = getSelectedUlID();
-            selectedCard.ulIndex = getSelectedHandIndex();
-
-        }
-    }
-}
-function deselectCard(){
-    if(selectedCard.image !== null){
-        switchImageSelection(selectedCard.image);
-        selectedCard.empty();
     }
 }
 
@@ -298,21 +289,14 @@ function switchImageSelection(imgNode: any){
     }
 }
 
-function getSelectedUlID(): string |null{
-    let ul = selectedCard.image.parentNode.parentNode;
-    if(ul !== null){
-        if(ul.nodeName == "UL") return ul.id;
-    }
-    return null;
-}
-function getSelectedHandIndex(): number | null{
-    if(selectedCard.ulID === "hand"){
-        let ulItems = selectedCard.image.parentNode.parentNode.getElementsByTagName("li");
-        for(let index: number = 0; index < ulItems.length; index++){
-            if(ulItems[index].getElementsByTagName("img")[0] === selectedCard.image){
-                return index;
-            }
+function moveCard(array: Card[]){
+    if(selectedUL !== null && selectedImg !== null && selectedIndex !== null){
+        if(currentPlayer !== null){
+            currentPlayer.moveCard(currentPlayer.hand, selectedIndex, array);
+            updateLists(currentPlayer);
         }
+        selectedUL = null;
+        selectedImg = null;
+        selectedIndex = null;
     }
-    return null;
 }

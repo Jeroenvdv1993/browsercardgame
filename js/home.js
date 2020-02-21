@@ -18,13 +18,16 @@ var Field = /** @class */ (function () {
     /////////////////
     // Constructor //
     /////////////////
-    function Field(playerHeader, handUL, deckSpan, playzoneUL, energyzoneUL, discardpileSpan) {
+    function Field(playerHeader, handUL, deckSpan, playzoneUL, energyzoneUL, discardpileSpan, handLengthSpan, playLengthSpan, energyLengthSpan) {
         this.playerHeader = document.getElementById(playerHeader);
         this.handUL = document.getElementById(handUL);
         this.deckSpan = document.getElementById(deckSpan);
         this.playzoneUL = document.getElementById(playzoneUL);
         this.energyzoneUL = document.getElementById(energyzoneUL);
         this.discardpileSpan = document.getElementById(discardpileSpan);
+        this.handLengthSpan = document.getElementById(handLengthSpan);
+        this.playLengthSpan = document.getElementById(playLengthSpan);
+        this.energyLengthSpan = document.getElementById(energyLengthSpan);
     }
     ;
     Field.prototype.setPlayerHeader = function (innerText) {
@@ -40,6 +43,21 @@ var Field = /** @class */ (function () {
     Field.prototype.setDiscardpileSpan = function (innerText) {
         if (this.discardpileSpan !== null) {
             this.discardpileSpan.innerText = innerText;
+        }
+    };
+    Field.prototype.setHandLengthSpan = function (innerText) {
+        if (this.handLengthSpan !== null) {
+            this.handLengthSpan.innerText = innerText;
+        }
+    };
+    Field.prototype.setPlayLengthSpan = function (innerText) {
+        if (this.playLengthSpan !== null) {
+            this.playLengthSpan.innerText = innerText;
+        }
+    };
+    Field.prototype.setEnergyLengthSpan = function (innerText) {
+        if (this.energyLengthSpan !== null) {
+            this.energyLengthSpan.innerText = innerText;
         }
     };
     Field.prototype.clearHandUL = function () {
@@ -67,7 +85,6 @@ exports.Field = Field;
 Object.defineProperty(exports, "__esModule", { value: true });
 var player_1 = require("./player");
 var field_1 = require("./field");
-var selectedCard_1 = require("./selectedCard");
 var player1 = new player_1.Player(1);
 var player2 = new player_1.Player(2);
 var currentPlayer;
@@ -75,9 +92,11 @@ var nextPlayer;
 var resetButton = document.getElementById("reset");
 var playButton = document.getElementById("play");
 var gameDiv = document.getElementById("game");
-var playerField = new field_1.Field("player", "hand", "deck", "playzone", "energyzone", "discardpile");
-var otherPlayerField = new field_1.Field("otherPlayer", "otherHand", "otherDeck", "otherPlayzone", "otherEnergyzone", "otherDiscardpile");
-var selectedCard = new selectedCard_1.SelectedCard();
+var playerField = new field_1.Field("player", "hand", "deck", "playzone", "energyzone", "discardpile", "handLength", "playLength", "energyLength");
+var otherPlayerField = new field_1.Field("otherPlayer", "otherHand", "otherDeck", "otherPlayzone", "otherEnergyzone", "otherDiscardpile", "otherHandLength", "otherPlayLength", "otherEnergyLength");
+var selectedUL = null;
+var selectedImg = null;
+var selectedIndex = null;
 ///////////
 // Reset //
 ///////////
@@ -102,10 +121,10 @@ reset();
 ///////////
 // Lists //
 ///////////
-function updateUnorderedList(unorderedList, array) {
-    if (unorderedList !== null) {
-        while (unorderedList.firstChild) {
-            unorderedList.removeChild(unorderedList.firstChild);
+function updateUnorderedList(UL, array) {
+    if (UL !== null) {
+        while (UL.firstChild) {
+            UL.removeChild(UL.firstChild);
         }
         for (var index = 0; index < array.length; index++) {
             var img = document.createElement('img');
@@ -113,20 +132,44 @@ function updateUnorderedList(unorderedList, array) {
             img.src = "../img/c_" + array[index].id + ".jpg";
             var li = document.createElement('li');
             li.appendChild(img);
-            unorderedList.appendChild(li);
+            UL.appendChild(li);
+        }
+        UL.onclick = function () {
+            moveCard(array);
+        };
+    }
+}
+function updateOtherUnorderedList(UL, array) {
+    if (UL !== null) {
+        while (UL.firstChild) {
+            UL.removeChild(UL.firstChild);
+        }
+        for (var index = 0; index < array.length; index++) {
+            var img = document.createElement('img');
+            img.classList.add("img-fluid");
+            img.src = "../img/c_" + array[index].id + ".jpg";
+            var li = document.createElement('li');
+            li.appendChild(img);
+            UL.appendChild(li);
         }
     }
 }
 function updateHand(player) {
     if (playerField.handUL !== null) {
         playerField.clearHandUL();
-        for (var index = 0; index < player.hand.length; index++) {
+        var _loop_1 = function (index) {
             var img = document.createElement('img');
             img.classList.add("img-fluid");
             img.src = "../img/c_" + player.hand[index].id + ".jpg";
             var li = document.createElement('li');
             li.appendChild(img);
+            li.onclick = function () {
+                selectCard(playerField.handUL, index);
+            };
             playerField.handUL.appendChild(li);
+        };
+        for (var index = 0; index < player.hand.length; index++) {
+            _loop_1(index);
         }
     }
 }
@@ -146,9 +189,12 @@ function updateOtherHand(otherPlayer) {
 function updateOtherLists(otherPlayer) {
     updateOtherHand(otherPlayer);
     otherPlayerField.setDeckSpan("" + otherPlayer.deck.length);
-    updateUnorderedList(otherPlayerField.playzoneUL, otherPlayer.playzone);
-    updateUnorderedList(otherPlayerField.energyzoneUL, otherPlayer.energyzone);
+    updateOtherUnorderedList(otherPlayerField.playzoneUL, otherPlayer.playzone);
+    updateOtherUnorderedList(otherPlayerField.energyzoneUL, otherPlayer.energyzone);
     otherPlayerField.setDiscardpileSpan("" + otherPlayer.discardpile.length);
+    otherPlayerField.setHandLengthSpan("" + otherPlayer.hand.length);
+    otherPlayerField.setPlayLengthSpan("" + otherPlayer.playzone.length);
+    otherPlayerField.setEnergyLengthSpan("" + otherPlayer.energyzone.length);
 }
 function updateLists(player) {
     updateHand(player);
@@ -156,6 +202,9 @@ function updateLists(player) {
     updateUnorderedList(playerField.playzoneUL, player.playzone);
     updateUnorderedList(playerField.energyzoneUL, player.energyzone);
     playerField.setDiscardpileSpan("" + player.discardpile.length);
+    playerField.setHandLengthSpan("" + player.hand.length);
+    playerField.setPlayLengthSpan("" + player.playzone.length);
+    playerField.setEnergyLengthSpan("" + player.energyzone.length);
 }
 function emptyLists() {
     playerField.clearHandUL();
@@ -267,63 +316,21 @@ if (playButton !== null) {
 //////////////////
 // Mouse Action //
 //////////////////
-document.onmousedown = click;
-function click(event) {
-    if (event.button == 0) {
-        var target = event.target;
-        var nodeName = target.nodeName;
-        if (nodeName !== null) {
-            switch (nodeName) {
-                case "IMG":
-                    selectCard(target);
-                    break;
-                case "UL":
-                    moveCardToZone(target);
-                    break;
-                default:
-                    deselectCard();
-                    break;
+function selectCard(ul, index) {
+    if (ul !== null) {
+        var li = ul.getElementsByTagName("li")[index];
+        if (li !== null) {
+            var img = li.getElementsByTagName("img")[0];
+            if (img !== null) {
+                if (selectedImg !== null) {
+                    switchImageSelection(selectedImg);
+                }
+                switchImageSelection(img);
+                selectedUL = ul;
+                selectedImg = img;
+                selectedIndex = index;
             }
         }
-    }
-}
-function moveCardToZone(ulNode) {
-    if (ulNode === playerField.playzoneUL) {
-        if (currentPlayer !== null && selectedCard.ulIndex !== null) {
-            playCard(currentPlayer, selectedCard.ulIndex);
-            selectedCard.empty();
-        }
-    }
-    else if (ulNode === playerField.energyzoneUL) {
-        if (currentPlayer !== null && selectedCard.ulIndex !== null) {
-            energyCard(currentPlayer, selectedCard.ulIndex);
-            selectedCard.empty();
-        }
-    }
-}
-function selectCard(imgNode) {
-    var origSrc = imgNode.src;
-    var dashPos = origSrc.lastIndexOf("/");
-    if (dashPos >= 0 && dashPos < origSrc.length) {
-        var path = origSrc.substr(0, dashPos + 1);
-        var filename = origSrc.substr(dashPos + 1);
-        if (filename.slice(0, 2) == "c_") {
-            // Deselect old card
-            if (selectedCard.image !== null) {
-                switchImageSelection(selectedCard.image);
-            }
-            // Select new card
-            switchImageSelection(imgNode);
-            selectedCard.image = imgNode;
-            selectedCard.ulID = getSelectedUlID();
-            selectedCard.ulIndex = getSelectedHandIndex();
-        }
-    }
-}
-function deselectCard() {
-    if (selectedCard.image !== null) {
-        switchImageSelection(selectedCard.image);
-        selectedCard.empty();
     }
 }
 function switchImageSelection(imgNode) {
@@ -341,27 +348,19 @@ function switchImageSelection(imgNode) {
         imgNode.src = path + filename;
     }
 }
-function getSelectedUlID() {
-    var ul = selectedCard.image.parentNode.parentNode;
-    if (ul !== null) {
-        if (ul.nodeName == "UL")
-            return ul.id;
-    }
-    return null;
-}
-function getSelectedHandIndex() {
-    if (selectedCard.ulID === "hand") {
-        var ulItems = selectedCard.image.parentNode.parentNode.getElementsByTagName("li");
-        for (var index = 0; index < ulItems.length; index++) {
-            if (ulItems[index].getElementsByTagName("img")[0] === selectedCard.image) {
-                return index;
-            }
+function moveCard(array) {
+    if (selectedUL !== null && selectedImg !== null && selectedIndex !== null) {
+        if (currentPlayer !== null) {
+            currentPlayer.moveCard(currentPlayer.hand, selectedIndex, array);
+            updateLists(currentPlayer);
         }
+        selectedUL = null;
+        selectedImg = null;
+        selectedIndex = null;
     }
-    return null;
 }
 
-},{"./field":2,"./player":4,"./selectedCard":5}],4:[function(require,module,exports){
+},{"./field":2,"./player":4}],4:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var card_1 = require("./card");
@@ -453,25 +452,7 @@ var Player = /** @class */ (function () {
 exports.Player = Player;
 ;
 
-},{"./card":1,"./shuffle":6}],5:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var SelectedCard = /** @class */ (function () {
-    function SelectedCard() {
-        this.image = null;
-        this.ulID = null;
-        this.ulIndex = null;
-    }
-    SelectedCard.prototype.empty = function () {
-        this.image = null;
-        this.ulID = null;
-        this.ulIndex = null;
-    };
-    return SelectedCard;
-}());
-exports.SelectedCard = SelectedCard;
-
-},{}],6:[function(require,module,exports){
+},{"./card":1,"./shuffle":5}],5:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 function shuffle(cards) {
