@@ -14,61 +14,43 @@ exports.Card = Card;
 },{}],2:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var player_1 = require("./player");
 var Field = /** @class */ (function () {
     /////////////////
     // Constructor //
     /////////////////
-    function Field(id) {
-        this.player = new player_1.Player(id);
-        this.playzone = document.getElementById("playzone" + id);
-        this.discardpile = document.getElementById("discardpile" + id);
-        this.points = document.getElementById("points" + id);
+    function Field(playerHeader, handUL, deckSpan, playzoneUL, discardpileSpan) {
+        this.playerHeader = document.getElementById(playerHeader);
+        this.handUL = document.getElementById(handUL);
+        this.deckSpan = document.getElementById(deckSpan);
+        this.playzoneUL = document.getElementById(playzoneUL);
+        this.discardpileSpan = document.getElementById(discardpileSpan);
     }
     ;
-    ///////////
-    // Reset //
-    ///////////
-    Field.prototype.reset = function () {
-        this.player.reset();
-        this.player.shuffle();
-        this.updateField();
-    };
-    ////////////
-    // Update //
-    ////////////
-    Field.prototype.updateField = function () {
-        this.updateUnorderedList(this.playzone, this.player.playzone);
-        this.updateUnorderedList(this.discardpile, this.player.discardpile);
-        if (this.points !== null)
-            this.points.innerText = "" + this.player.points;
-    };
-    Field.prototype.updateUnorderedList = function (unorderedList, array) {
-        if (unorderedList !== null) {
-            while (unorderedList.firstChild) {
-                unorderedList.removeChild(unorderedList.firstChild);
-            }
-            for (var index = 0; index < array.length; index++) {
-                var img = document.createElement('img');
-                img.classList.add("img-fluid");
-                img.src = "../img/c_" + array[index].id + ".jpg";
-                var li = document.createElement('li');
-                li.appendChild(img);
-                unorderedList.appendChild(li);
-            }
+    Field.prototype.setPlayerHeader = function (innerText) {
+        if (this.playerHeader !== null) {
+            this.playerHeader.innerText = innerText;
         }
     };
-    ///////////
-    // Empty //
-    ///////////
-    Field.prototype.emptyField = function () {
-        this.emptyUnorderedList(this.playzone);
-        this.emptyUnorderedList(this.discardpile);
+    Field.prototype.setDeckSpan = function (innerText) {
+        if (this.deckSpan !== null) {
+            this.deckSpan.innerText = innerText;
+        }
     };
-    Field.prototype.emptyUnorderedList = function (unorderedList) {
-        if (unorderedList !== null) {
-            while (unorderedList.firstChild) {
-                unorderedList.removeChild(unorderedList.firstChild);
+    Field.prototype.setDiscardpileSpan = function (innerText) {
+        if (this.discardpileSpan !== null) {
+            this.discardpileSpan.innerText = innerText;
+        }
+    };
+    Field.prototype.clearHandUL = function () {
+        this.clearUL(this.handUL);
+    };
+    Field.prototype.clearPlayzoneUL = function () {
+        this.clearUL(this.playzoneUL);
+    };
+    Field.prototype.clearUL = function (UL) {
+        if (UL !== null) {
+            while (UL.firstChild) {
+                UL.removeChild(UL.firstChild);
             }
         }
     };
@@ -76,41 +58,35 @@ var Field = /** @class */ (function () {
 }());
 exports.Field = Field;
 
-},{"./player":4}],3:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var player_1 = require("./player");
 var field_1 = require("./field");
 var selectedCard_1 = require("./selectedCard");
-var field1 = new field_1.Field(1);
-var field2 = new field_1.Field(2);
+var player1 = new player_1.Player(1);
+var player2 = new player_1.Player(2);
 var currentPlayer;
 var nextPlayer;
 var resetButton = document.getElementById("reset");
 var playButton = document.getElementById("play");
 var gameDiv = document.getElementById("game");
-var playerHeader = document.getElementById("player");
-var handUl = document.getElementById("hand");
-var deckSpan = document.getElementById("deck");
-var playzoneUl = document.getElementById("playzone");
-var discardpileSpan = document.getElementById("discardpile");
-var otherPlayerHeader = document.getElementById("otherPlayer");
-var otherHandUl = document.getElementById("otherHand");
-var otherDeckSpan = document.getElementById("otherDeck");
-var otherPlayzoneUl = document.getElementById("otherPlayzone");
-var otherDiscardpileSpan = document.getElementById("otherDiscardpile");
+var playerField = new field_1.Field("player", "hand", "deck", "playzone", "discardpile");
+var otherPlayerField = new field_1.Field("otherPlayer", "otherHand", "otherDeck", "otherPlayzone", "otherDiscardpile");
 var selectedCard = new selectedCard_1.SelectedCard();
 ///////////
 // Reset //
 ///////////
 function reset() {
-    field1.reset();
-    draw(field1.player, 3);
-    field2.reset();
-    draw(field2.player, 3);
+    player1.reset();
+    player1.shuffle();
+    draw(player1, 3);
+    player2.reset();
+    player2.shuffle();
+    draw(player2, 3);
     currentPlayer = null;
     nextPlayer = null;
-    if (playerHeader !== null)
-        playerHeader.innerHTML = "";
+    playerField.setPlayerHeader("");
     if (playButton !== null)
         playButton.innerText = "Start";
     if (gameDiv !== null)
@@ -138,84 +114,48 @@ function updateUnorderedList(unorderedList, array) {
     }
 }
 function updateHand(player) {
-    if (handUl !== null) {
-        while (handUl.firstChild) {
-            handUl.removeChild(handUl.firstChild);
-        }
+    if (playerField.handUL !== null) {
+        playerField.clearHandUL();
         for (var index = 0; index < player.hand.length; index++) {
             var img = document.createElement('img');
             img.classList.add("img-fluid");
             img.src = "../img/c_" + player.hand[index].id + ".jpg";
             var li = document.createElement('li');
             li.appendChild(img);
-            /*li.addEventListener('click', function(){
-                playCard(player, index);
-            });*/
-            handUl.appendChild(li);
+            playerField.handUL.appendChild(li);
         }
     }
 }
 function updateOtherHand(otherPlayer) {
-    if (otherHandUl !== null) {
-        while (otherHandUl.firstChild) {
-            otherHandUl.removeChild(otherHandUl.firstChild);
-        }
+    if (otherPlayerField.handUL !== null) {
+        otherPlayerField.clearHandUL();
         for (var index = 0; index < otherPlayer.hand.length; index++) {
             var img = document.createElement("img");
             img.classList.add("img-fluid");
             img.src = "../img/cb_0.jpg";
             var li = document.createElement('li');
             li.appendChild(img);
-            otherHandUl.appendChild(li);
-        }
-    }
-}
-function updateDeck(player) {
-    if (deckSpan !== null) {
-        deckSpan.innerText = "" + player.deck.length;
-    }
-}
-function updateOtherDeck(otherPlayer) {
-    if (otherDeckSpan !== null) {
-        otherDeckSpan.innerText = "" + otherPlayer.deck.length;
-    }
-}
-function updateDiscardpile(player) {
-    if (discardpileSpan !== null) {
-        discardpileSpan.innerText = "" + player.discardpile.length;
-    }
-}
-function updateOtherDiscardpile(otherPlayer) {
-    if (otherDiscardpileSpan !== null) {
-        otherDiscardpileSpan.innerText = "" + otherPlayer.discardpile.length;
-    }
-}
-function emptyUnorderedList(unorderedList) {
-    if (unorderedList !== null) {
-        while (unorderedList.firstChild) {
-            unorderedList.removeChild(unorderedList.firstChild);
+            otherPlayerField.handUL.appendChild(li);
         }
     }
 }
 function updateOtherLists(otherPlayer) {
     updateOtherHand(otherPlayer);
-    updateOtherDeck(otherPlayer);
-    updateUnorderedList(otherPlayzoneUl, otherPlayer.playzone);
-    updateOtherDiscardpile(otherPlayer);
+    otherPlayerField.setDeckSpan("" + otherPlayer.deck.length);
+    updateUnorderedList(otherPlayerField.playzoneUL, otherPlayer.playzone);
+    otherPlayerField.setDiscardpileSpan("" + otherPlayer.discardpile.length);
 }
 function updateLists(player) {
     updateHand(player);
-    updateDeck(player);
-    updateUnorderedList(playzoneUl, player.playzone);
-    updateDiscardpile(player);
+    playerField.setDeckSpan("" + player.deck.length);
+    updateUnorderedList(playerField.playzoneUL, player.playzone);
+    playerField.setDiscardpileSpan("" + player.discardpile.length);
 }
 function emptyLists() {
-    emptyUnorderedList(handUl);
-    emptyUnorderedList(playzoneUl);
-    emptyUnorderedList(otherHandUl);
-    emptyUnorderedList(otherPlayzoneUl);
-    field1.emptyField();
-    field2.emptyField();
+    playerField.clearHandUL();
+    playerField.clearPlayzoneUL();
+    otherPlayerField.clearHandUL();
+    otherPlayerField.clearPlayzoneUL();
 }
 ////////////////////////
 // Play functionality //
@@ -223,8 +163,6 @@ function emptyLists() {
 function playCard(player, index) {
     player.play(index);
     updateLists(player);
-    //field1.updateField();
-    //field2.updateField();
 }
 function draw(player, amount) {
     if (amount === void 0) { amount = 1; }
@@ -236,37 +174,35 @@ function endTurn() {
     if (gameDiv !== null)
         gameDiv.hidden = true;
     if (playButton !== null) {
-        if (currentPlayer === field1.player) {
-            nextPlayer = field2.player;
+        if (currentPlayer === player1) {
+            nextPlayer = player2;
             playButton.innerText = "Player 2";
         }
         else {
-            nextPlayer = field1.player;
+            nextPlayer = player1;
             playButton.innerText = "Player 1";
         }
         currentPlayer = null;
     }
 }
 function switchPlayer() {
-    var _a;
     currentPlayer = nextPlayer;
     nextPlayer = null;
-    if (currentPlayer !== null)
+    if (currentPlayer !== null) {
         draw(currentPlayer, 3);
-    if (playerHeader !== null && currentPlayer !== null) {
-        playerHeader.innerHTML = "Player " + currentPlayer.id;
+        playerField.setPlayerHeader("Player " + currentPlayer.id);
         updateLists(currentPlayer);
     }
     if (currentPlayer !== null) {
         var otherPlayer = null;
         if (currentPlayer.id === 1) {
-            otherPlayer = field2.player;
+            otherPlayer = player2;
         }
         else {
-            otherPlayer = field1.player;
+            otherPlayer = player1;
         }
-        if (otherPlayerHeader !== null && otherPlayer !== null) {
-            otherPlayerHeader.innerHTML = "Player " + ((_a = otherPlayer) === null || _a === void 0 ? void 0 : _a.id);
+        if (otherPlayer !== null) {
+            otherPlayerField.setPlayerHeader("Player " + otherPlayer.id);
             updateOtherLists(otherPlayer);
         }
     }
@@ -276,15 +212,13 @@ function switchPlayer() {
         playButton.innerText = "End Turn";
 }
 function startPlayer() {
-    currentPlayer = field1.player;
+    currentPlayer = player1;
     nextPlayer = null;
     if (currentPlayer !== null) {
-        if (playerHeader !== null)
-            playerHeader.innerHTML = "Player " + currentPlayer.id;
+        playerField.setPlayerHeader("Player " + currentPlayer.id);
         updateLists(currentPlayer);
-        var otherPlayer = field2.player;
-        if (otherPlayerHeader !== null)
-            otherPlayerHeader.innerHTML = "Player " + otherPlayer.id;
+        var otherPlayer = player2;
+        otherPlayerField.setPlayerHeader("Player " + otherPlayer.id);
         updateOtherLists(otherPlayer);
     }
     if (gameDiv !== null)
@@ -342,7 +276,7 @@ function click(event) {
     }
 }
 function moveCardToZone(ulNode) {
-    if (ulNode === playzoneUl) {
+    if (ulNode === playerField.playzoneUL) {
         if (currentPlayer !== null && selectedCard.ulIndex !== null) {
             playCard(currentPlayer, selectedCard.ulIndex);
             selectedCard.empty();
@@ -409,7 +343,7 @@ function getSelectedHandIndex() {
     return null;
 }
 
-},{"./field":2,"./selectedCard":5}],4:[function(require,module,exports){
+},{"./field":2,"./player":4,"./selectedCard":5}],4:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var card_1 = require("./card");

@@ -1,66 +1,59 @@
-import { Player } from "./player";
-import { Card } from "./card";
-
 export class Field{
     ////////////
     // Values //
     ////////////
-    player: Player;
-    playzone: HTMLElement | null;
-    discardpile: HTMLElement | null;
-    points: HTMLElement | null;
+    playerHeader: HTMLElement | null;
+    handUL: HTMLElement | null;
+    deckSpan: HTMLElement | null;
+    playzoneUL: HTMLElement | null;
+    discardpileSpan: HTMLElement | null;
+
+
     /////////////////
     // Constructor //
     /////////////////
-    constructor(id: number){
-        this.player = new Player(id);
-        this.playzone = document.getElementById(`playzone${id}`);
-        this.discardpile = document.getElementById(`discardpile${id}`);
-        this.points = document.getElementById(`points${id}`);
+    constructor(
+        playerHeader: string, 
+        handUL: string, 
+        deckSpan: string,
+        playzoneUL: string,
+        discardpileSpan: string){
+            this.playerHeader = document.getElementById(playerHeader);
+            this.handUL = document.getElementById(handUL);
+            this.deckSpan = document.getElementById(deckSpan);
+            this.playzoneUL = document.getElementById(playzoneUL);
+            this.discardpileSpan = document.getElementById(discardpileSpan);
     };
 
-    ///////////
-    // Reset //
-    ///////////
-    reset(): void{
-        this.player.reset();
-        this.player.shuffle();
-        this.updateField();
-    }
-    ////////////
-    // Update //
-    ////////////
-    updateField(): void{
-        this.updateUnorderedList(this.playzone, this.player.playzone);
-        this.updateUnorderedList(this.discardpile, this.player.discardpile);
-        if(this.points !== null) this.points.innerText = `${this.player.points}`;
-    }
-    updateUnorderedList(unorderedList: HTMLElement | null, array: Card[]): void{
-        if(unorderedList !== null){
-            while(unorderedList.firstChild){
-                unorderedList.removeChild(unorderedList.firstChild);
-            }
-            for(let index: number = 0; index < array.length; index++){
-                let img = document.createElement('img');
-                img.classList.add("img-fluid");
-                img.src = `../img/c_${array[index].id}.jpg`;
-                let li = document.createElement('li');
-                li.appendChild(img);
-                unorderedList.appendChild(li);
-            }
+    setPlayerHeader(innerText: string){
+        if(this.playerHeader !== null){
+            this.playerHeader.innerText = innerText;
         }
     }
-    ///////////
-    // Empty //
-    ///////////
-    emptyField(): void{
-        this.emptyUnorderedList(this.playzone);
-        this.emptyUnorderedList(this.discardpile);
+
+    setDeckSpan(innerText: string){
+        if(this.deckSpan !== null){
+            this.deckSpan.innerText = innerText;
+        }
     }
-    emptyUnorderedList(unorderedList: HTMLElement | null): void{
-        if(unorderedList !== null){
-            while(unorderedList.firstChild){
-                unorderedList.removeChild(unorderedList.firstChild);
+
+    setDiscardpileSpan(innerText: string){
+        if(this.discardpileSpan !== null){
+            this.discardpileSpan.innerText = innerText;
+        }
+    }
+
+    clearHandUL(){
+        this.clearUL(this.handUL);
+    }
+    clearPlayzoneUL(){
+        this.clearUL(this.playzoneUL);
+    }
+
+    clearUL(UL: HTMLElement | null){
+        if(UL !== null){
+            while(UL.firstChild){
+                UL.removeChild(UL.firstChild);
             }
         }
     }

@@ -3,8 +3,8 @@ import { Card} from "./card";
 import { Field } from "./field";
 import { SelectedCard } from "./selectedCard";
 
-let field1: Field = new Field(1);
-let field2: Field = new Field(2);
+let player1: Player = new Player(1);
+let player2: Player = new Player(2);
 let currentPlayer: Player | null;
 let nextPlayer: Player | null;
 
@@ -12,17 +12,21 @@ let resetButton = document.getElementById("reset");
 let playButton = document.getElementById("play");
 let gameDiv = document.getElementById("game");
 
-let playerHeader = document.getElementById("player");
-let handUl = document.getElementById("hand");
-let deckSpan = document.getElementById("deck");
-let playzoneUl = document.getElementById("playzone");
-let discardpileSpan = document.getElementById("discardpile");
+let playerField: Field = new Field(
+    "player",
+    "hand",
+    "deck",
+    "playzone",
+    "discardpile"
+);
 
-let otherPlayerHeader = document.getElementById("otherPlayer");
-let otherHandUl = document.getElementById("otherHand");
-let otherDeckSpan = document.getElementById("otherDeck");
-let otherPlayzoneUl = document.getElementById("otherPlayzone");
-let otherDiscardpileSpan = document.getElementById("otherDiscardpile");
+let otherPlayerField: Field = new Field(
+    "otherPlayer",
+    "otherHand",
+    "otherDeck",
+    "otherPlayzone",
+    "otherDiscardpile"
+);
 
 let selectedCard: SelectedCard = new SelectedCard();
 
@@ -30,15 +34,17 @@ let selectedCard: SelectedCard = new SelectedCard();
 // Reset //
 ///////////
 function reset(): void{
-    field1.reset();
-    draw(field1.player, 3);
+    player1.reset();
+    player1.shuffle();
+    draw(player1, 3);
 
-    field2.reset();
-    draw(field2.player, 3);
+    player2.reset();
+    player2.shuffle();
+    draw(player2, 3);
 
     currentPlayer = null;
     nextPlayer = null;
-    if(playerHeader !== null) playerHeader.innerHTML = "";
+    playerField.setPlayerHeader("");
     if(playButton !== null) playButton.innerText = "Start";
     if(gameDiv !== null) gameDiv.hidden = true;
     emptyLists();
@@ -66,85 +72,49 @@ function updateUnorderedList(unorderedList: HTMLElement | null, array: Card[]): 
 }
 
 function updateHand(player: Player){
-    if(handUl !== null){
-        while(handUl.firstChild){
-            handUl.removeChild(handUl.firstChild);
-        }
+    if(playerField.handUL !== null){
+        playerField.clearHandUL();
         for(let index: number = 0; index < player.hand.length; index++){
             let img = document.createElement('img');
             img.classList.add("img-fluid");
             img.src = `../img/c_${player.hand[index].id}.jpg`;
             let li = document.createElement('li');
             li.appendChild(img);
-            /*li.addEventListener('click', function(){
-                playCard(player, index);
-            });*/
-            handUl.appendChild(li);
+            playerField.handUL.appendChild(li);
         }
     }
 }
 function updateOtherHand(otherPlayer: Player){
-    if(otherHandUl !== null){
-        while(otherHandUl.firstChild){
-            otherHandUl.removeChild(otherHandUl.firstChild);
-        }
+    if(otherPlayerField.handUL !== null){
+        otherPlayerField.clearHandUL();
         for(let index: number = 0; index < otherPlayer.hand.length; index++){
             let img = document.createElement("img");
             img.classList.add("img-fluid");
             img.src = "../img/cb_0.jpg";
             let li = document.createElement('li');
             li.appendChild(img);
-            otherHandUl.appendChild(li);
+            otherPlayerField.handUL.appendChild(li);
         }
-    }
-}
-function updateDeck(player: Player){
-    if(deckSpan !== null){
-        deckSpan.innerText = `${player.deck.length}`;
-    }
-}
-function updateOtherDeck(otherPlayer: Player){
-    if(otherDeckSpan !== null){
-        otherDeckSpan.innerText = `${otherPlayer.deck.length}`;
-    }
-}
-function updateDiscardpile(player: Player){
-    if(discardpileSpan !== null){
-        discardpileSpan.innerText = `${player.discardpile.length}`;
-    }
-}
-function updateOtherDiscardpile(otherPlayer: Player){
-    if(otherDiscardpileSpan !== null){
-        otherDiscardpileSpan.innerText = `${otherPlayer.discardpile.length}`;
     }
 }
 
-function emptyUnorderedList(unorderedList: HTMLElement | null){
-    if(unorderedList !== null){
-        while(unorderedList.firstChild){
-            unorderedList.removeChild(unorderedList.firstChild);
-        }
-    }
-}
 function updateOtherLists(otherPlayer: Player): void {
     updateOtherHand(otherPlayer);
-    updateOtherDeck(otherPlayer);
-    updateUnorderedList(otherPlayzoneUl, otherPlayer.playzone);
-    updateOtherDiscardpile(otherPlayer);
+    otherPlayerField.setDeckSpan(`${otherPlayer.deck.length}`);
+    updateUnorderedList(otherPlayerField.playzoneUL, otherPlayer.playzone);
+    otherPlayerField.setDiscardpileSpan(`${otherPlayer.discardpile.length}`)
 }
 function updateLists(player: Player): void{
     updateHand(player);
-    updateDeck(player);
-    updateUnorderedList(playzoneUl, player.playzone);
-    updateDiscardpile(player);
+    playerField.setDeckSpan(`${player.deck.length}`);
+    updateUnorderedList(playerField.playzoneUL, player.playzone);
+    playerField.setDiscardpileSpan(`${player.discardpile.length}`);
 }
 function emptyLists(): void{
-    emptyUnorderedList(handUl);
-    emptyUnorderedList(playzoneUl);
-    emptyUnorderedList(otherHandUl);
-    emptyUnorderedList(otherPlayzoneUl);
-    field1.emptyField();
-    field2.emptyField();
+    playerField.clearHandUL();
+    playerField.clearPlayzoneUL();
+    otherPlayerField.clearHandUL();
+    otherPlayerField.clearPlayzoneUL();
 }
 ////////////////////////
 // Play functionality //
@@ -152,8 +122,6 @@ function emptyLists(): void{
 function playCard(player: Player, index: number): void{
     player.play(index);
     updateLists(player);
-    //field1.updateField();
-    //field2.updateField();
 }
 
 function draw(player: Player, amount: number = 1): void{
@@ -164,12 +132,12 @@ function draw(player: Player, amount: number = 1): void{
 function endTurn(){
     if(gameDiv !== null) gameDiv.hidden = true;
     if(playButton !== null){
-        if(currentPlayer === field1.player){
-            nextPlayer = field2.player;
+        if(currentPlayer === player1){
+            nextPlayer = player2;
             playButton.innerText = "Player 2";
         }
         else{
-            nextPlayer = field1.player;
+            nextPlayer = player1;
             playButton.innerText = "Player 1";
         }
         currentPlayer = null;
@@ -179,21 +147,21 @@ function endTurn(){
 function switchPlayer(){
     currentPlayer = nextPlayer;
     nextPlayer = null;
-    if(currentPlayer !== null) draw(currentPlayer, 3);
-    if(playerHeader !== null && currentPlayer !== null){
-        playerHeader.innerHTML = `Player ${currentPlayer.id}`;
+    if(currentPlayer !== null){
+        draw(currentPlayer, 3);
+        playerField.setPlayerHeader(`Player ${currentPlayer.id}`);
         updateLists(currentPlayer);
     }
     if(currentPlayer !== null){
         let otherPlayer: Player | null = null;
         if(currentPlayer.id === 1){
-            otherPlayer = field2.player;
+            otherPlayer = player2;
         }
         else{
-            otherPlayer = field1.player;
+            otherPlayer = player1;
         }
-        if(otherPlayerHeader !== null && otherPlayer !== null){
-            otherPlayerHeader.innerHTML = `Player ${otherPlayer?.id}`;
+        if(otherPlayer !== null){
+            otherPlayerField.setPlayerHeader(`Player ${otherPlayer.id}`);
             updateOtherLists(otherPlayer);
         }
     }
@@ -201,13 +169,13 @@ function switchPlayer(){
     if(playButton !== null) playButton.innerText = "End Turn";
 }
 function  startPlayer() {
-    currentPlayer = field1.player;
+    currentPlayer = player1;
     nextPlayer = null;
     if(currentPlayer !== null){
-        if(playerHeader !== null) playerHeader.innerHTML = `Player ${currentPlayer.id}`;
+        playerField.setPlayerHeader(`Player ${currentPlayer.id}`);
         updateLists(currentPlayer);
-        let otherPlayer = field2.player;
-        if(otherPlayerHeader !== null) otherPlayerHeader.innerHTML = `Player ${otherPlayer.id}`;
+        let otherPlayer = player2;
+        otherPlayerField.setPlayerHeader(`Player ${otherPlayer.id}`);
         updateOtherLists(otherPlayer);
     }
     if(gameDiv !== null) gameDiv.hidden = false;
@@ -264,7 +232,7 @@ function click(event: any){
 }
 
 function moveCardToZone(ulNode: any){
-    if(ulNode  === playzoneUl){
+    if(ulNode  === playerField.playzoneUL){
         if(currentPlayer !== null && selectedCard.ulIndex !== null){
             playCard(currentPlayer, selectedCard.ulIndex);
             selectedCard.empty();
